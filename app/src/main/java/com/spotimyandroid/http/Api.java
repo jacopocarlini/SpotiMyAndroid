@@ -84,6 +84,13 @@ public class Api {
         call(url, callback);
     }
 
+    public void lyric(String artist, String track, final VolleyCallback callback) {
+        // Instantiate the RequestQueue.
+
+        String url = "http://" + SERVER_IP + ":3000/lyric/" + artist+"/"+track;
+        call(url, callback);
+    }
+
 
     public void cancel() {
         if (queue != null) {

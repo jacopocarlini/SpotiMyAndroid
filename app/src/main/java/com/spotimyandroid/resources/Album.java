@@ -1,51 +1,47 @@
 package com.spotimyandroid.resources;
 
-import android.net.Uri;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.URL;
-
 /**
- * Created by Jacopo on 12/03/2018.
+ * Created by Jacopo on 13/03/2018.
  */
 
-public class Artist {
+public class Album {
 
     private String name;
-    private String image;
+    private String cover;
 
-    public Artist(JSONObject o) {
+    public Album(JSONObject o) {
         try {
             this.name = o.getString("name");
 
         } catch (JSONException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
             this.name = "name";
 
         }
 
         try {
-            this.image=o.getJSONArray("images").getJSONObject(0).getString("url");
+            this.cover=o.getJSONArray("images").getJSONObject(0).getString("url");
         } catch (JSONException e) {
-//            e.printStackTrace();
-            this.image="image";
+            e.printStackTrace();
+            this.cover="cover";
 
         }
 
 
     }
-    public static Artist[] toArray(JSONArray array) {
-        Artist[] a = new Artist[array.length()];
+    public static Album[] toArray(JSONArray array) {
+        Album[] a = new Album[array.length()];
         for (int i =0 ; i< array.length();i++){
             try {
-                Artist elem= new Artist(array.getJSONObject(i));
+                Album elem= new Album(array.getJSONObject(i));
                 a[i]=elem;
             } catch (JSONException e) {
                 e.printStackTrace();
-                return new Artist[0];
+                return new Album[0];
             }
         }
         return a;
@@ -59,12 +55,12 @@ public class Artist {
         this.name = name;
     }
 
-    public String getImage() {
-        return image;
+    public String getCover() {
+        return cover;
     }
 
-    public boolean hasImage() {
-        if (image.equals("image")) return false;
+    public boolean hasCover() {
+        if (cover.equals("cover")) return false;
         else return true;
     }
 }

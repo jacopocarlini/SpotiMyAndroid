@@ -1,5 +1,8 @@
 package com.spotimyandroid.resources;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,11 +11,16 @@ import org.json.JSONObject;
  * Created by Jacopo on 11/03/2018.
  */
 
-public class Track {
+public class Track implements Parcelable {
     private String name;
     private String artist;
     private String album;
     private String date;
+    private String cover;
+
+
+
+    private String lyric;
     private int duration;
 
     public Track(String name, String artists, String album, String date, int duration) {
@@ -27,6 +35,7 @@ public class Track {
         try {
             this.name = o.getString("name");
             this.artist =  o.getJSONArray("artists").getJSONObject(0).getString("name");
+            this.album =  o.getJSONObject("album").getString("name");
 //            this.album =  o.getString("album");
 //            this.date =  o.getString("date");
 //            this.duration =  o.getInt("duration");
@@ -38,8 +47,16 @@ public class Track {
             this.date = "date";
             this.duration = 0;
         }
+        try {
+            this.cover =  o.getJSONObject("album").getJSONArray("images").getJSONObject(0).getString("url");
+        } catch (JSONException e) {
+            this.cover="cover";
+        }
+
 
     }
+
+
 
     public static Track[] toArray(JSONArray array){
         Track[] r = new Track[array.length()];
@@ -95,4 +112,62 @@ public class Track {
     public void setDuration(int duration) {
         this.duration = duration;
     }
+
+    public String getLyric() {
+        return lyric;
+    }
+
+    public void setLyric(String lyric) {
+        this.lyric = lyric;
+    }
+
+    public String getCover() {
+        return cover;
+    }
+
+    public void setCover(String cover) {
+        this.cover = cover;
+    }
+
+    public boolean hasCover(){
+        if (cover.equals("cover")) return false;
+        else return true;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(name);
+        parcel.writeString(artist);
+        parcel.writeString(album);
+        parcel.writeString(cover);
+
+    }
+
+
+    protected Track(Parcel in) {
+        name = in.readString();
+        artist = in.readString();
+        album = in.readString();
+        cover = in.readString();
+//        duration = in.readInt();
+    }
+
+    public static final Creator<Track> CREATOR = new Creator<Track>() {
+        @Override
+        public Track createFromParcel(Parcel in) {
+            return new Track(in);
+        }
+
+        @Override
+        public Track[] newArray(int size) {
+            return new Track[size];
+        }
+    };
+
+
 }
