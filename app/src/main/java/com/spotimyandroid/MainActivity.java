@@ -1,56 +1,36 @@
 package com.spotimyandroid;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
+import android.widget.ScrollView;
+import android.widget.Scroller;
 import android.widget.SearchView;
 import android.widget.TextView;
 
 import com.spotimyandroid.http.Api;
-import com.spotimyandroid.adapters.TracksAdapter;
+import com.spotimyandroid.resources.Artist;
 import com.spotimyandroid.resources.Track;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static android.provider.AlarmClock.EXTRA_MESSAGE;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView mTextMessage;
     private SearchView searchView;
 
     private Api server;
-    private ListView tracksView;
+    private ScrollView scrollView;
+    private LinearLayout tracksView;
+    private LinearLayout albumsView;
+    private LinearLayout artistsView;
 
-
-    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
-            = new BottomNavigationView.OnNavigationItemSelectedListener() {
-
-        @Override
-        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.navigation_home:
-                    mTextMessage.setText(R.string.title_home);
-                    return true;
-                case R.id.navigation_search:
-                    mTextMessage.setText(R.string.title_search);
-                    return true;
-                case R.id.navigation_library:
-                    mTextMessage.setText(R.string.title_dashboard);
-                    return true;
-            }
-            return false;
-        }
-    };
 
 
     @Override
@@ -66,11 +46,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initview() {
-        mTextMessage = (TextView) findViewById(R.id.message);
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
-        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        this.scrollView=(ScrollView) findViewById(R.id.results);
         this.searchView=(SearchView) findViewById(R.id.search);
-        this.tracksView = (ListView) findViewById(R.id.tracksView);
+        this.tracksView = (LinearLayout) findViewById(R.id.tracksView);
+        this.artistsView = (LinearLayout) findViewById(R.id.artistsView);
+        this.albumsView = (LinearLayout) findViewById(R.id.albumsView);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
@@ -79,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String s) {
+                scrollView.setVisibility(View.INVISIBLE);
                 doMySearch(s);
                 return false;
             }
@@ -87,22 +68,45 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void doMySearch(String query) {
-        server.findTrack(query, new Api.VolleyCallback() {
+    private void doMySearch(final String query) {
+        System.out.println("do search");
+        server.findTrack(query.replace(" ","%20"), new Api.VolleyCallback() {
             @Override
             public void onSuccess(JSONObject result) {
                 try {
-                    JSONArray array = result.getJSONArray("items");
-//                    String []r =new String[array.length()];
-//                    for (int i =0; i<array.length(); i++) {
-//                        r[i]=array.getJSONObject(i).getString("name")
-//                                +" - "
-//                                +array.getJSONObject(i).getJSONArray("artists").getJSONObject(0).getString("name");
-//
-//                    }
-                    final TracksAdapter adapter = new TracksAdapter(getApplicationContext(), Track.toArray(array));
-                    tracksView.setAdapter(adapter);
-                    tracksView.setOnItemClickListener(new MyClickListener());
+                    JSONArray array = result.getJSONObject("tracks").getJSONArray("items");
+
+                    addElemToTracksView(Track.toArray(array));
+
+                    server.findArtist(query, new Api.VolleyCallback() {
+                        @Override
+                        public void onSuccess(JSONObject result) {
+                            try {
+                                JSONArray array = result.getJSONObject("artists").getJSONArray("items");
+                                addElemToArtistsView(Artist.toArray(array));
+
+                                server.findAlbum(query, new Api.VolleyCallback() {
+                                    @Override
+                                    public void onSuccess(JSONObject result) {
+                                        try {
+                                            JSONArray array = result.getJSONObject("albums").getJSONArray("items");
+                                            addElemToAlbumsView(Artist.toArray(array));
+                                            scrollView.setVisibility(View.VISIBLE);
+                                        } catch (JSONException e) {
+                                            System.out.println("errore");
+                                            e.printStackTrace();
+                                        }
+
+                                    }
+                                });
+
+                            } catch (JSONException e) {
+                                System.out.println("errore");
+                                e.printStackTrace();
+                            }
+
+                        }
+                    });
 
                 } catch (JSONException e) {
                     System.out.println("errore");
@@ -112,26 +116,89 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        System.out.println("do search");
+
+
+
 
     }
 
-
-
-    private class MyClickListener implements AdapterView.OnItemClickListener {
-        @Override
-        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-            Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
-            LinearLayout track = (LinearLayout) view.findViewById(R.id.track);
-//            String message =  ((TextView)track.getChildAt(0)).getText()
-//                    +" - "
-//                    +((TextView)tracksView.getChildAt(1)).getText();
-            TextView name = (TextView) view.findViewById(R.id.name);
-            TextView artist = (TextView) view.findViewById(R.id.artist);
-            String message = name.getText()+" - "+artist.getText();
-            System.out.println(message);
-            intent.putExtra("song", message);
-            startActivity(intent);
+    private void addElemToAlbumsView(Artist[] artists) {
+        albumsView.removeAllViews();
+        LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        for (int i =0 ;i<artists.length;i++){
+            View elem = inflater.inflate(R.layout.item_album, null);
+            TextView name = (TextView) elem.findViewById(R.id.name);
+            name.setText(artists[i].getName());
+            elem.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(getApplicationContext(), ArtistActivity.class);
+                    TextView name = (TextView) view.findViewById(R.id.name);
+                    String message = name.getText().toString();
+                    intent.putExtra("album", message);
+                    startActivity(intent);
+                }
+            });
+            albumsView.addView(elem);
         }
     }
+
+    private void addElemToArtistsView(Artist[] artists) {
+        artistsView.removeAllViews();
+        LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        for (int i =0 ;i<artists.length;i++){
+            View elem = inflater.inflate(R.layout.item_artist, null);
+            TextView name = (TextView) elem.findViewById(R.id.artist);
+            name.setText(artists[i].getName());
+            elem.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(getApplicationContext(), ArtistActivity.class);
+                    TextView name = (TextView) view.findViewById(R.id.artist);
+                    String message = name.getText().toString();
+                    intent.putExtra("artist", message);
+                    startActivity(intent);
+                }
+            });
+            artistsView.addView(elem);
+        }
+    }
+
+    public void addElemToTracksView(Track[] tracks){
+        tracksView.removeAllViews();
+        LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        for (int i =0 ;i<tracks.length;i++){
+            View elem = inflater.inflate(R.layout.item_track, null);
+            TextView name = (TextView) elem.findViewById(R.id.name);
+            name.setText(tracks[i].getName());
+            TextView artist = (TextView) elem.findViewById(R.id.artist);
+            artist.setText(tracks[i].getArtist());
+            elem.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
+                    TextView name = (TextView) view.findViewById(R.id.name);
+                    TextView artist = (TextView) view.findViewById(R.id.artist);
+                    String message = name.getText()+" - "+artist.getText();
+                    intent.putExtra("song", message);
+                    startActivity(intent);
+                }
+            });
+            tracksView.addView(elem);
+        }
+
+    }
+
+
+//    private class MyClickListener implements AdapterView.OnItemClickListener {
+//        @Override
+//        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+//            Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
+//            TextView name = (TextView) view.findViewById(R.id.name);
+//            TextView artist = (TextView) view.findViewById(R.id.artist);
+//            String message = name.getText()+" - "+artist.getText();
+//            intent.putExtra("song", message);
+//            startActivity(intent);
+//        }
+//    }
 }

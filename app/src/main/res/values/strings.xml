@@ -4,4 +4,12 @@
     <string name="title_search">Search</string>
     <string name="title_dashboard">Dashboard</string>
 
+    <string name="tracks">Tracks</string>
+    <string name="artists">Artists</string>
+    <string name="albums">Albums</string>
+    <string name="track">Track</string>
+    <string name="artist">Artist</string>
+    <string name="album">Album</string>
+    <string name="hint">Search...</string>
+
 </resources>

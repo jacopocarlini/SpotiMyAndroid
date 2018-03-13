@@ -9,7 +9,7 @@
     <LinearLayout
         android:id="@+id/track"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
@@ -26,6 +26,7 @@
             android:layout_weight="1"
             android:text="name"
             android:textAlignment="textStart"
+            android:textColor="@color/white"
             app:layout_constraintStart_toStartOf="parent"
             tools:layout_editor_absoluteY="230dp" />
 
@@ -34,11 +35,11 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-
             android:layout_marginStart="8dp"
             android:layout_weight="1"
             android:text="artist"
             android:textAlignment="center"
+            android:textColor="@color/white"
             app:layout_constraintEnd_toStartOf="@+id/duration"
             app:layout_constraintHorizontal_bias="0.422"
             app:layout_constraintStart_toEndOf="@+id/name"
@@ -52,6 +53,7 @@
             android:layout_weight="1"
             android:text="duration"
             android:textAlignment="textEnd"
+            android:textColor="@color/white"
             app:layout_constraintEnd_toEndOf="parent"
             tools:layout_editor_absoluteY="230dp" />
 

@@ -14,6 +14,7 @@ import com.spotimyandroid.resources.Track;
  * Created by Jacopo on 11/03/2018.
  */
 
+//NOTE: NOT USED
 public class TracksAdapter  extends BaseAdapter {
     private final Context context;
     private Track[] tracks;

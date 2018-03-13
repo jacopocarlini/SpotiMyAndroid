@@ -40,7 +40,7 @@ public class Api {
                     @Override
                     public void onResponse(JSONObject response) {
                         // Display the first 500 characters of the response string.
-                        Log.d("response", response.toString());
+//                        Log.d("response", response.toString());
                         callback.onSuccess(response);
                     }
                 }, new Response.ErrorListener() {
@@ -66,7 +66,21 @@ public class Api {
     public void findTrack(String query, final VolleyCallback callback) {
         // Instantiate the RequestQueue.
 
-        String url = "http://" + SERVER_IP + ":3000/find/" + query;
+        String url = "http://" + SERVER_IP + ":3000/track/" + query;
+        call(url, callback);
+    }
+
+    public void findArtist(String query, final VolleyCallback callback) {
+        // Instantiate the RequestQueue.
+
+        String url = "http://" + SERVER_IP + ":3000/artist/" + query;
+        call(url, callback);
+    }
+
+    public void findAlbum(String query, final VolleyCallback callback) {
+        // Instantiate the RequestQueue.
+
+        String url = "http://" + SERVER_IP + ":3000/album/" + query;
         call(url, callback);
     }
 

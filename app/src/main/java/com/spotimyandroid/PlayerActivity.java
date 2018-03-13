@@ -4,9 +4,13 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
 
 import com.spotimyandroid.http.Api;
 
@@ -21,8 +25,12 @@ import java.io.IOException;
 public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener,
         MediaPlayer.OnBufferingUpdateListener {
 
-    private ProgressBar progressBar;
+    private SeekBar seekBar;
+    private ImageButton previous;
+    private ImageButton pause;
+    private ImageButton next;
     private MediaPlayer mediaPlayer;
+    private Handler handler = new Handler();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,27 +50,79 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             mediaPlayer.setDataSource(server.getTrackURL(value));
             mediaPlayer.prepare();
             mediaPlayer.start();
+            primaryProgressBarUpdater();
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        server.play(value, new Api.VolleyCallback() {
-//            @Override
-//            public void onSuccess(JSONObject result) {
-//                mediaPlayer.setDataSource(result);
-//            }
-//        });
+
 
     }
 
     private void initiview() {
+        seekBar = (SeekBar) findViewById(R.id.seekBar);
+        seekBar.setMax(99); // It means 100% .0-99
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
 
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        progressBar.setMax(99); // It means 100% .0-99
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                mediaPlayer.seekTo(seekBar.getProgress());
+
+            }
+        });
+
+        pause=(ImageButton) findViewById(R.id.pause);
+        pause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mediaPlayer.isPlaying())
+                    mediaPlayer.pause();
+                else
+                    mediaPlayer.start();
+            }
+        });
+
     }
 
 
+    private void primaryProgressBarUpdater() {
+        System.out.println(mediaPlayer.getCurrentPosition());
+        System.out.println(mediaPlayer.getDuration());
+        seekBar.setProgress((int) (((float) mediaPlayer.getCurrentPosition() / mediaPlayer.getDuration()) * 100)); // This math construction give a percentage of "was playing"/"song length"
+        if (mediaPlayer.isPlaying()) {
+            Runnable notification = new Runnable() {
+                public void run() {
+                    primaryProgressBarUpdater();
+                }
+            };
+            handler.postDelayed(notification, 1000);
+        }
+    }
+    private void secondaryProgressBarUpdater(int i) {
+        final int j = i;
+        seekBar.setSecondaryProgress(i);
+        if (mediaPlayer.isPlaying()) {
+            Runnable notification = new Runnable() {
+                public void run() {
+                   secondaryProgressBarUpdater(j);
+                }
+            };
+            handler.postDelayed(notification, 1000);
+        }
+    }
+
     @Override
     public void onBufferingUpdate(MediaPlayer mediaPlayer, int i) {
+        System.out.println("buff");
+        secondaryProgressBarUpdater(i);
 
     }
 
