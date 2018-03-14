@@ -2,13 +2,9 @@ package com.spotimyandroid;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -19,15 +15,14 @@ import android.widget.TextView;
 
 import com.spotimyandroid.http.Api;
 import com.spotimyandroid.resources.Album;
-import com.spotimyandroid.resources.ApplicationSupport;
 import com.spotimyandroid.resources.Artist;
 import com.spotimyandroid.resources.Track;
+import com.spotimyandroid.utils.ApplicationSupport;
+import com.spotimyandroid.utils.DownloadImageTask;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.InputStream;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -62,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     private void initview() {
         this.scrollView=(ScrollView) findViewById(R.id.results);
         this.searchView=(SearchView) findViewById(R.id.search);
-        this.tracksView = (LinearLayout) findViewById(R.id.tracksView);
+        this.tracksView = (LinearLayout) findViewById(R.id.tracks);
         this.artistsView = (LinearLayout) findViewById(R.id.artistsView);
         this.albumsView = (LinearLayout) findViewById(R.id.albumsView);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -138,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void addElemToAlbumsView(Album[] albums) {
+    private void addElemToAlbumsView(final Album[] albums) {
         albumsView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         for (int i =0 ;i<albums.length;i++){
@@ -148,15 +143,13 @@ public class MainActivity extends AppCompatActivity {
             ImageView cover = (ImageView) elem.findViewById(R.id.cover);
 //            System.out.println(artists[i].getImage());
             if (albums[i].hasCover())
-                new DownloadImageTask(cover)
-                        .execute(albums[i].getCover());
+                new DownloadImageTask(cover).execute(albums[i].getCover());
+            final int finalI = i;
             elem.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), AlbumActivity.class);
-                    TextView name = (TextView) view.findViewById(R.id.name);
-                    String message = name.getText().toString();
-                    intent.putExtra("album", message);
+                    intent.putExtra("album", albums[finalI]);
                     startActivity(intent);
                 }
             });
@@ -222,40 +215,4 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    protected static class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-        ImageView bmImage;
-
-        public DownloadImageTask(ImageView bmImage) {
-            this.bmImage = bmImage;
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            String urldisplay = urls[0];
-            Bitmap mIcon11 = null;
-            try {
-                InputStream in = new java.net.URL(urldisplay).openStream();
-                mIcon11 = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error", e.getMessage());
-                e.printStackTrace();
-            }
-            return mIcon11;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            bmImage.setImageBitmap(result);
-        }
-    }
-
-//    private class MyClickListener implements AdapterView.OnItemClickListener {
-//        @Override
-//        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-//            Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
-//            TextView name = (TextView) view.findViewById(R.id.name);
-//            TextView artist = (TextView) view.findViewById(R.id.artist);
-//            String message = name.getText()+" - "+artist.getText();
-//            intent.putExtra("song", message);
-//            startActivity(intent);
-//        }
-//    }
 }

@@ -28,7 +28,8 @@ public class Artist {
         }
 
         try {
-            this.image=o.getJSONArray("images").getJSONObject(0).getString("url");
+            JSONArray a = o.getJSONArray("images");
+            this.image=a.getJSONObject(1).getString("url");
         } catch (JSONException e) {
 //            e.printStackTrace();
             this.image="image";

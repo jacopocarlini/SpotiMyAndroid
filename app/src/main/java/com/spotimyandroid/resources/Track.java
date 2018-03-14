@@ -35,7 +35,6 @@ public class Track implements Parcelable {
         try {
             this.name = o.getString("name");
             this.artist =  o.getJSONArray("artists").getJSONObject(0).getString("name");
-            this.album =  o.getJSONObject("album").getString("name");
 //            this.album =  o.getString("album");
 //            this.date =  o.getString("date");
 //            this.duration =  o.getInt("duration");
@@ -51,6 +50,11 @@ public class Track implements Parcelable {
             this.cover =  o.getJSONObject("album").getJSONArray("images").getJSONObject(0).getString("url");
         } catch (JSONException e) {
             this.cover="cover";
+        }
+        try {
+            this.album =  o.getJSONObject("album").getString("name");
+        } catch (JSONException e) {
+            this.album="album";
         }
 
 

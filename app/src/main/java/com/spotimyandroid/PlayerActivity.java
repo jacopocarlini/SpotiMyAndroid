@@ -3,12 +3,9 @@ package com.spotimyandroid;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -18,13 +15,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.spotimyandroid.http.Api;
-import com.spotimyandroid.resources.ApplicationSupport;
 import com.spotimyandroid.resources.Track;
+import com.spotimyandroid.utils.ApplicationSupport;
+import com.spotimyandroid.utils.DownloadImageTask;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -59,7 +56,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
         Intent intent = getIntent();
-        String value = intent.getStringExtra("song");
+        final String value = intent.getStringExtra("song");
         trackInfo = intent.getParcelableExtra("track");
 //        System.out.println(value);
 
@@ -73,14 +70,27 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         server = new Api(this);
         initiview();
 
-        try {
-            mediaPlayer.setDataSource(server.getTrackURL(value));
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-            primaryProgressBarUpdater();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        AsyncTask downloadSong = new AsyncTask() {
+            @Override
+            protected Object doInBackground(Object[] objects) {
+
+                try {
+                    mediaPlayer.reset();
+                    mediaPlayer.setDataSource(server.getTrackURL(value));
+                    mediaPlayer.prepare();
+                    mediaPlayer.start();
+                    primaryProgressBarUpdater();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        };
+
+        downloadSong.execute();
+
 
 
     }
@@ -101,7 +111,11 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                mediaPlayer.seekTo(seekBar.getProgress());
+                System.out.println("seekto"+ seekBar.getProgress());
+                int duration = mediaPlayer.getDuration();
+                System.out.println(duration *seekBar.getProgress()/100);
+
+                mediaPlayer.seekTo(duration *seekBar.getProgress()/100);
 
             }
         });
@@ -143,7 +157,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
         cover=(ImageView) findViewById(R.id.cover);
         if (trackInfo.hasCover())
-            new MainActivity.DownloadImageTask(cover).execute(trackInfo.getCover());
+            new DownloadImageTask(cover).execute(trackInfo.getCover());
 
 
     }
@@ -162,6 +176,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             handler.postDelayed(notification, 1000);
         }
     }
+
     private void secondaryProgressBarUpdater(int i) {
         final int j = i;
         seekBar.setSecondaryProgress(i);
@@ -178,7 +193,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     @Override
     public void onBufferingUpdate(MediaPlayer mediaPlayer, int i) {
 //        System.out.println("buff");
-        secondaryProgressBarUpdater(i);
+//        secondaryProgressBarUpdater(i);
 
     }
 
@@ -187,29 +202,6 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
     }
 
-    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-        ImageView bmImage;
 
-        public DownloadImageTask(ImageView bmImage) {
-            this.bmImage = bmImage;
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            String urldisplay = urls[0];
-            Bitmap mIcon11 = null;
-            try {
-                InputStream in = new java.net.URL(urldisplay).openStream();
-                mIcon11 = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error", e.getMessage());
-                e.printStackTrace();
-            }
-            return mIcon11;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            bmImage.setImageBitmap(result);
-        }
-    }
 
 }

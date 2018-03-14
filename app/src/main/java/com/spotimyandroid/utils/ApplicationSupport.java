@@ -1,4 +1,4 @@
-package com.spotimyandroid.resources;
+package com.spotimyandroid.utils;
 
 import android.app.Application;
 import android.media.MediaPlayer;

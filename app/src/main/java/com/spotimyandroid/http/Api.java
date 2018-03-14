@@ -90,6 +90,12 @@ public class Api {
         String url = "http://" + SERVER_IP + ":3000/lyric/" + artist+"/"+track;
         call(url, callback);
     }
+    public void findTracksOfAlbum(String id, final VolleyCallback callback) {
+        // Instantiate the RequestQueue.
+
+        String url = "http://" + SERVER_IP + ":3000/tracks_of_album/" + id;
+        call(url, callback);
+    }
 
 
     public void cancel() {
