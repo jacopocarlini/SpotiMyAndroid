@@ -42,7 +42,7 @@
                 android:layout_weight="1"
                 android:maxLength="30"
                 android:maxLines="1"
-                android:text="albumaaaaaaaaaaaaaaaaaaaaaa"
+                android:text="@string/album"
                 android:textAlignment="viewStart"
                 android:textColor="@color/silver"
                 app:layout_constraintEnd_toEndOf="parent"
