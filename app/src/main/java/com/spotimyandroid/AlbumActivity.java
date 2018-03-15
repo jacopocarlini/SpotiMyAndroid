@@ -10,10 +10,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.spotimyandroid.http.Api;
 import com.spotimyandroid.resources.Album;
 import com.spotimyandroid.resources.Track;
-import com.spotimyandroid.utils.DownloadImageTask;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -72,7 +72,7 @@ public class AlbumActivity extends AppCompatActivity{
         tracksView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         for (int i=0; i<tracks.length;i++){
-            tracks[i].setAlbum(albumInfo.getName());
+            tracks[i].setAlbum(albumInfo.getCover());
             View elem = inflater.inflate(R.layout.item_album_track, null);
             final TextView track = (TextView) elem.findViewById(R.id.track);
             track.setText(tracks[i].getName());
@@ -84,8 +84,6 @@ public class AlbumActivity extends AppCompatActivity{
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
-                    String message = tracks[finalI].getName()+" - "+albumInfo.getArtist();
-                    intent.putExtra("song", message);
                     intent.putExtra("track", tracks[finalI]);
                     startActivity(intent);
                 }
@@ -95,8 +93,10 @@ public class AlbumActivity extends AppCompatActivity{
         }
 
         cover = (ImageView) findViewById(R.id.cover);
+        System.out.println(albumInfo);
         if (albumInfo.hasCover())
-            new DownloadImageTask(cover).execute(albumInfo.getCover());
+//            new DownloadImageTask(cover).execute(albumInfo.getCover());
+            Glide.with(this).load(albumInfo.getCover()).into(cover);
 
     }
 

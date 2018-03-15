@@ -2,14 +2,11 @@ package com.spotimyandroid;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -18,6 +15,7 @@ import android.widget.ScrollView;
 import android.widget.SearchView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.spotimyandroid.http.Api;
 import com.spotimyandroid.resources.Album;
 import com.spotimyandroid.resources.Artist;
@@ -28,17 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import de.hdodenhof.circleimageview.CircleImageView;
-
-import static com.spotimyandroid.utils.DownloadImageTask.loadBitmap;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -77,10 +65,12 @@ public class MainActivity extends AppCompatActivity {
         this.tracksView = (LinearLayout) findViewById(R.id.tracks);
         this.artistsView = (LinearLayout) findViewById(R.id.artistsView);
         this.albumsView = (LinearLayout) findViewById(R.id.albumsView);
+        final AsyncTask[] task = new AsyncTask[1];
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
                 scrollView.setVisibility(View.INVISIBLE);
+                if (task[0]!=null) task[0].cancel(true);
                 doMySearch(s);
                 return false;
             }
@@ -88,14 +78,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextChange(final String s) {
                 scrollView.setVisibility(View.INVISIBLE);
-                AsyncTask task = new AsyncTask() {
+                if (task[0]!=null) task[0].cancel(true);
+                task[0] = new AsyncTask() {
                     @Override
                     protected Object doInBackground(Object[] objects) {
                         doMySearch(s);
                         return null;
                     }
                 };
-                task.execute();
+                task[0].execute();
+
 
                 return false;
             }
@@ -170,7 +162,8 @@ public class MainActivity extends AppCompatActivity {
             if (albums[i].hasCover()) {
 //                new DownloadImageTask(cover).execute(albums[i].getCover());
 //                setImage(albums[i].getCover(), cover);
-                cover.setImageBitmap(loadBitmap(albums[i].getCover()));
+//                cover.setImageBitmap(loadBitmap(albums[i].getCover()));
+                Glide.with(this).load(albums[i].getCover()).into(cover);
             }
             final int finalI = i;
             elem.setOnClickListener(new View.OnClickListener() {
@@ -185,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void addElemToArtistsView(Artist[] artists) {
+    private void addElemToArtistsView(final Artist[] artists) {
         artistsView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         for (int i =0 ;i<artists.length;i++){
@@ -196,16 +189,17 @@ public class MainActivity extends AppCompatActivity {
 //            System.out.println(artists[i].getImage());
             if (artists[i].hasImage()) {
 //                new DownloadImageTask(image).execute(artists[i].getImage());
-                image.setImageBitmap(loadBitmap(artists[i].getImage()));
+//                image.setImageBitmap(loadBitmap(artists[i].getImage()));
+                Glide.with(this).load(artists[i].getImage()).into(image);
             }
 
+            final int finalI = i;
             elem.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), ArtistActivity.class);
                     TextView name = (TextView) view.findViewById(R.id.artist);
-                    String message = name.getText().toString();
-                    intent.putExtra("artist", message);
+                    intent.putExtra("artist", artists[finalI]);
                     startActivity(intent);
                 }
             });

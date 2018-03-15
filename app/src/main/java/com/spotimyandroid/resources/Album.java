@@ -20,9 +20,6 @@ public class Album implements Parcelable {
     private String cover;
     private String id;
 
-    public void setCover(String cover) {
-        this.cover = cover;
-    }
 
 
     public Album(JSONObject o) {
@@ -48,6 +45,7 @@ public class Album implements Parcelable {
 
 
     }
+
     public static Album[] toArray(JSONArray array) {
         Album[] a = new Album[array.length()];
         for (int i =0 ; i< array.length();i++){
@@ -74,6 +72,10 @@ public class Album implements Parcelable {
         return cover;
     }
 
+    public void setCover(String cover) {
+        this.cover = cover;
+    }
+
     public String getArtist() {
         return artist;
     }
@@ -89,6 +91,7 @@ public class Album implements Parcelable {
     public void setArtist(String artist) {
         this.artist = artist;
     }
+
     public boolean hasCover() {
         if (cover.equals("cover")) return false;
         else return true;

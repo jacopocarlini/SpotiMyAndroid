@@ -19,7 +19,8 @@ import org.json.JSONObject;
 
 
 public class Api {
-    private String SERVER_IP = "10.0.2.2"; //localhost
+//    private String SERVER_IP = "10.0.2.2"; //localhost
+    private String SERVER_IP = "192.168.1.14"; //pc
 
     public static final String TAG = "API";
     private Context context;
@@ -63,6 +64,8 @@ public class Api {
         RequestQueue_Singeton.getInstance(context).addToRequestQueue(jsonRequest);
     }
 
+
+
     public void findTrack(String query, final VolleyCallback callback) {
         // Instantiate the RequestQueue.
 
@@ -90,12 +93,40 @@ public class Api {
         String url = "http://" + SERVER_IP + ":3000/lyric/" + artist+"/"+track;
         call(url, callback);
     }
+
     public void findTracksOfAlbum(String id, final VolleyCallback callback) {
         // Instantiate the RequestQueue.
 
         String url = "http://" + SERVER_IP + ":3000/tracks_of_album/" + id;
         call(url, callback);
     }
+
+    public void findAlbumsOfArtist(String id, final VolleyCallback callback) {
+        // Instantiate the RequestQueue.
+
+        String url = "http://" + SERVER_IP + ":3000/albums_of_artist/" + id;
+        call(url, callback);
+    }
+
+    public void findPopularOfArtist(String id, final VolleyCallback callback) {
+        // Instantiate the RequestQueue.
+
+        String url = "http://" + SERVER_IP + ":3000/popular_of_artist/" + id;
+        call(url, callback);
+    }
+
+    public String getTrackURL(String query) {
+        System.out.println(query);
+        return  "http://" + SERVER_IP + ":3000/play/" + query.replace(" ","%20");
+    }
+
+
+
+    public void play(String query, final VolleyCallback callback) {
+        String url = "http://" + SERVER_IP + ":3000/play/" + query;
+        call(url, callback);
+    }
+
 
 
     public void cancel() {
@@ -104,19 +135,8 @@ public class Api {
         }
     }
 
-
     public void setOffset(int i) {
         this.offset=i;
-    }
-
-    public void play(String query, final VolleyCallback callback) {
-        String url = "http://" + SERVER_IP + ":3000/play/" + query;
-        call(url, callback);
-    }
-
-    public String getTrackURL(String query) {
-        System.out.println(query);
-        return  "http://" + SERVER_IP + ":3000/play/" + query.replace(" ","%20");
     }
 
 

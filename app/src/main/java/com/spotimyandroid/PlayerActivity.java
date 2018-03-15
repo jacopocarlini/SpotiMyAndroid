@@ -1,35 +1,33 @@
 package com.spotimyandroid;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.spotimyandroid.http.Api;
 import com.spotimyandroid.resources.Track;
 import com.spotimyandroid.utils.ApplicationSupport;
-import com.spotimyandroid.utils.DownloadImageTask;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
 
-import static com.spotimyandroid.utils.DownloadImageTask.loadBitmap;
+import static android.media.AudioAttributes.CONTENT_TYPE_MUSIC;
 
 /**
  * Created by Jacopo on 11/03/2018.
@@ -58,20 +56,49 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
         Intent intent = getIntent();
-        final String value = intent.getStringExtra("song");
         trackInfo = intent.getParcelableExtra("track");
 //        System.out.println(value);
 
         mediaPlayer = ((ApplicationSupport) this.getApplication()).getMP();
-
+        System.out.println("1");
         mediaPlayer.reset();
-        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        mediaPlayer.setOnBufferingUpdateListener(this);
-        mediaPlayer.setOnCompletionListener(this);
+
+        System.out.println("2");
+
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            AudioAttributes aa = null;
+            aa = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build();
+            mediaPlayer.setAudioAttributes(aa);
+        }
+        else   {
+
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+        }
+//        mediaPlayer.setOnBufferingUpdateListener(this);
+//        mediaPlayer.setOnCompletionListener(this);
+        System.out.println("3");
 
         server = new Api(this);
         initiview();
 
+//        String query = trackInfo.getName() +" - "+trackInfo.getArtist();
+//        query=query.replace(" ","%20");
+//        try {
+//            mediaPlayer.setDataSource(server.getTrackURL(query));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        try {
+//            mediaPlayer.prepare();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        mediaPlayer.start();
+//        primaryProgressBarUpdater();
 
         AsyncTask downloadSong = new AsyncTask() {
             @Override
@@ -79,7 +106,9 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
                 try {
                     mediaPlayer.reset();
-                    mediaPlayer.setDataSource(server.getTrackURL(value));
+                    String query = trackInfo.getName() +" - "+trackInfo.getArtist();
+                    query=query.replace(" ","%20");
+                    mediaPlayer.setDataSource(server.getTrackURL(query));
                     mediaPlayer.prepare();
                     mediaPlayer.start();
                     primaryProgressBarUpdater();
@@ -158,9 +187,12 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         });
 
         cover=(ImageView) findViewById(R.id.cover);
-        if (trackInfo.hasCover())
-            cover.setImageBitmap(loadBitmap(trackInfo.getCover()));
-//            new DownloadImageTask(cover).execute(trackInfo.getCover());
+        System.out.println(trackInfo);
+        if (trackInfo.hasCover()){
+            Glide.with(this).load(trackInfo.getCover()).into(cover);
+
+        }
+
 
 
 

@@ -139,6 +139,19 @@ public class Track implements Parcelable {
     }
 
     @Override
+    public String toString() {
+        return "Track{" +
+                "name='" + name + '\'' +
+                ", artist='" + artist + '\'' +
+                ", album='" + album + '\'' +
+                ", date='" + date + '\'' +
+                ", cover='" + cover + '\'' +
+                ", lyric='" + lyric + '\'' +
+                ", duration=" + duration +
+                '}';
+    }
+
+    @Override
     public int describeContents() {
         return 0;
     }
