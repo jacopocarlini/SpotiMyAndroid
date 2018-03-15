@@ -2,9 +2,14 @@ package com.spotimyandroid;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -18,13 +23,22 @@ import com.spotimyandroid.resources.Album;
 import com.spotimyandroid.resources.Artist;
 import com.spotimyandroid.resources.Track;
 import com.spotimyandroid.utils.ApplicationSupport;
-import com.spotimyandroid.utils.DownloadImageTask;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static com.spotimyandroid.utils.DownloadImageTask.loadBitmap;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -43,6 +57,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
 
 
         server = new Api(this);
@@ -69,9 +86,17 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public boolean onQueryTextChange(String s) {
+            public boolean onQueryTextChange(final String s) {
                 scrollView.setVisibility(View.INVISIBLE);
-                doMySearch(s);
+                AsyncTask task = new AsyncTask() {
+                    @Override
+                    protected Object doInBackground(Object[] objects) {
+                        doMySearch(s);
+                        return null;
+                    }
+                };
+                task.execute();
+
                 return false;
             }
         });
@@ -142,8 +167,11 @@ public class MainActivity extends AppCompatActivity {
             name.setText(albums[i].getName());
             ImageView cover = (ImageView) elem.findViewById(R.id.cover);
 //            System.out.println(artists[i].getImage());
-            if (albums[i].hasCover())
-                new DownloadImageTask(cover).execute(albums[i].getCover());
+            if (albums[i].hasCover()) {
+//                new DownloadImageTask(cover).execute(albums[i].getCover());
+//                setImage(albums[i].getCover(), cover);
+                cover.setImageBitmap(loadBitmap(albums[i].getCover()));
+            }
             final int finalI = i;
             elem.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -166,9 +194,10 @@ public class MainActivity extends AppCompatActivity {
             name.setText(artists[i].getName());
             CircleImageView image = (CircleImageView) elem.findViewById(R.id.image);
 //            System.out.println(artists[i].getImage());
-            if (artists[i].hasImage())
-                new DownloadImageTask(image)
-                        .execute(artists[i].getImage());
+            if (artists[i].hasImage()) {
+//                new DownloadImageTask(image).execute(artists[i].getImage());
+                image.setImageBitmap(loadBitmap(artists[i].getImage()));
+            }
 
             elem.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -212,6 +241,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
 
 
 

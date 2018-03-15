@@ -29,6 +29,8 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static com.spotimyandroid.utils.DownloadImageTask.loadBitmap;
+
 /**
  * Created by Jacopo on 11/03/2018.
  */
@@ -157,7 +159,9 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
         cover=(ImageView) findViewById(R.id.cover);
         if (trackInfo.hasCover())
-            new DownloadImageTask(cover).execute(trackInfo.getCover());
+            cover.setImageBitmap(loadBitmap(trackInfo.getCover()));
+//            new DownloadImageTask(cover).execute(trackInfo.getCover());
+
 
 
     }
