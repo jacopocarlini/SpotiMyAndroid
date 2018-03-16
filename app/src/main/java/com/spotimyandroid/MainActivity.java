@@ -6,9 +6,11 @@ import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -26,6 +28,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.zip.Inflater;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 
@@ -38,25 +42,37 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout tracksView;
     private LinearLayout albumsView;
     private LinearLayout artistsView;
-
+    private ApplicationSupport as;
+    private MediaPlayer mediaPlayer;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        System.out.println("ON CREATE!!!!!");
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
 
         server = new Api(this);
+
+
+        if (as==null){
+            as = (ApplicationSupport) this.getApplication();
+            as.prepare();
+        }
+
+        mediaPlayer = as. getMP();
         initview();
 
-        ((ApplicationSupport) this.getApplication()).setMP(new MediaPlayer());
+    }
 
-
-
+    @Override
+    protected void onResume() {
+        super.onResume();
+        player();
     }
 
     private void initview() {
@@ -65,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
         this.tracksView = (LinearLayout) findViewById(R.id.tracks);
         this.artistsView = (LinearLayout) findViewById(R.id.artistsView);
         this.albumsView = (LinearLayout) findViewById(R.id.albumsView);
+
         final AsyncTask[] task = new AsyncTask[1];
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -93,6 +110,31 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+
+    }
+
+    public void player(){
+        final ImageButton pause=(ImageButton) findViewById(R.id.pause);
+        if(mediaPlayer.isPlaying()) {
+            pause.setImageResource(android.R.drawable.ic_media_pause);
+        }
+        else{
+            pause.setImageResource(android.R.drawable.ic_media_play);
+        }
+        pause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mediaPlayer.isPlaying()) {
+                    pause.setImageResource(android.R.drawable.ic_media_play);
+                    mediaPlayer.pause();
+                }
+                else{
+                    pause.setImageResource(android.R.drawable.ic_media_pause);
+                    mediaPlayer.start();
+                }
+            }
+        });
     }
 
 
@@ -210,6 +252,7 @@ public class MainActivity extends AppCompatActivity {
     public void addElemToTracksView(final Track[] tracks){
         tracksView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        as.resetQueue();
         for (int i =0 ;i<tracks.length;i++){
             View elem = inflater.inflate(R.layout.item_track, null);
             TextView name = (TextView) elem.findViewById(R.id.name);
@@ -219,6 +262,7 @@ public class MainActivity extends AppCompatActivity {
             TextView album = (TextView) elem.findViewById(R.id.album);
             album.setText(tracks[i].getAlbum());
             final int finalI = i;
+            as.addTrackToQueue(tracks[i]);
             elem.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -228,6 +272,7 @@ public class MainActivity extends AppCompatActivity {
                     String message = name.getText()+" - "+artist.getText();
                     intent.putExtra("song", message);
                     intent.putExtra("track", tracks[finalI]);
+
                     startActivity(intent);
                 }
             });

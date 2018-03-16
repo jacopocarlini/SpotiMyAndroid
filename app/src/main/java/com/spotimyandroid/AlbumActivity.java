@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide;
 import com.spotimyandroid.http.Api;
 import com.spotimyandroid.resources.Album;
 import com.spotimyandroid.resources.Track;
+import com.spotimyandroid.utils.ApplicationSupport;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,12 +33,13 @@ public class AlbumActivity extends AppCompatActivity{
     private Album albumInfo;
     private Track[] tracks;
     private ImageView cover;
+    private ApplicationSupport as;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_album);
-
+        as = (ApplicationSupport) this.getApplication();
         Intent intent = getIntent();
         albumInfo = intent.getParcelableExtra("album");
         System.out.println(albumInfo);
@@ -71,6 +73,7 @@ public class AlbumActivity extends AppCompatActivity{
         tracksView = (LinearLayout) findViewById(R.id.tracks);
         tracksView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        as.resetQueue();
         for (int i=0; i<tracks.length;i++){
             tracks[i].setAlbum(albumInfo.getCover());
             View elem = inflater.inflate(R.layout.item_album_track, null);
@@ -80,6 +83,7 @@ public class AlbumActivity extends AppCompatActivity{
             position.setText(Integer.toString(i+1));
 
             final int finalI = i;
+            as.addTrackToQueue(tracks[i]);
             elem.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {

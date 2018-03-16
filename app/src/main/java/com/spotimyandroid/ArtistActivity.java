@@ -17,6 +17,7 @@ import com.spotimyandroid.http.Api;
 import com.spotimyandroid.resources.Album;
 import com.spotimyandroid.resources.Artist;
 import com.spotimyandroid.resources.Track;
+import com.spotimyandroid.utils.ApplicationSupport;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,11 +36,13 @@ public class ArtistActivity extends AppCompatActivity {
     private GridLayout albums;
     private Album[] albumsInfo;
     private Track[] tracksInfo;
+    private ApplicationSupport as;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_artist);
+        as = (ApplicationSupport) this.getApplication();
 
         Intent intent = getIntent();
         artistInfo = intent.getParcelableExtra("artist");
@@ -76,6 +79,7 @@ public class ArtistActivity extends AppCompatActivity {
                 try {
                     tracksInfo= Track.toArray(result.getJSONArray("tracks"));
                     LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    as.resetQueue();
                     for (int i=0; i<5;i++){
                         tracksInfo[i].setAlbum(tracksInfo[i].getCover());
                         View elem = inflater.inflate(R.layout.item_album_track, null);
@@ -83,7 +87,7 @@ public class ArtistActivity extends AppCompatActivity {
                         track.setText(tracksInfo[i].getName());
                         TextView position = (TextView) elem.findViewById(R.id.position);
                         position.setText(Integer.toString(i+1));
-
+                        as.addTrackToQueue(tracksInfo[i]);
                         final int finalI = i;
                         elem.setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -113,16 +117,6 @@ public class ArtistActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-//                AlbumsAdapter adapter = new AlbumsAdapter(getApplicationContext(),albumsInfo);
-//                albums.setAdapter(adapter);
-//                albums.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//                    @Override
-//                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-//                        Intent intent = new Intent(getApplicationContext(), AlbumActivity.class);
-//                        intent.putExtra("album", albumsInfo[i]);
-//                        startActivity(intent);
-//                    }
-//                });
                 LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 for (int i=0; i<albumsInfo.length;i++){
                     View elem = inflater.inflate(R.layout.item_album, null);

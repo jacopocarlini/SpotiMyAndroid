@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -26,6 +27,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 import static android.media.AudioAttributes.CONTENT_TYPE_MUSIC;
 
@@ -33,8 +35,7 @@ import static android.media.AudioAttributes.CONTENT_TYPE_MUSIC;
  * Created by Jacopo on 11/03/2018.
  */
 
-public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener,
-        MediaPlayer.OnBufferingUpdateListener {
+public class PlayerActivity extends AppCompatActivity {
 
     private SeekBar seekBar;
     private ImageButton previous;
@@ -56,62 +57,62 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
         Intent intent = getIntent();
-        trackInfo = intent.getParcelableExtra("track");
-//        System.out.println(value);
-
-        mediaPlayer = ((ApplicationSupport) this.getApplication()).getMP();
-        System.out.println("1");
-        mediaPlayer.reset();
-
-        System.out.println("2");
+//        trackInfo = intent.getParcelableExtra("track");
 
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            AudioAttributes aa = null;
-            aa = new AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .build();
-            mediaPlayer.setAudioAttributes(aa);
-        }
-        else   {
-
-            mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
-        }
-//        mediaPlayer.setOnBufferingUpdateListener(this);
-//        mediaPlayer.setOnCompletionListener(this);
-        System.out.println("3");
-
+        as = ((ApplicationSupport) this.getApplication());
+        mediaPlayer = as.getMP();
         server = new Api(this);
+        trackInfo = as.getCurrentTrack();
+        Log.d("PlayerActivity", trackInfo.toString());
+        System.out.println("QUI: "+trackInfo.toString());
+
         initiview();
 
-//        String query = trackInfo.getName() +" - "+trackInfo.getArtist();
-//        query=query.replace(" ","%20");
-//        try {
-//            mediaPlayer.setDataSource(server.getTrackURL(query));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        try {
-//            mediaPlayer.prepare();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        mediaPlayer.start();
-//        primaryProgressBarUpdater();
 
         AsyncTask downloadSong = new AsyncTask() {
             @Override
             protected Object doInBackground(Object[] objects) {
 
                 try {
-                    mediaPlayer.reset();
-                    String query = trackInfo.getName() +" - "+trackInfo.getArtist();
-                    query=query.replace(" ","%20");
-                    mediaPlayer.setDataSource(server.getTrackURL(query));
-                    mediaPlayer.prepare();
-                    mediaPlayer.start();
+
+                        as.resetQueue();
+                        as.addTrackToQueue(trackInfo);
+                        if (mediaPlayer.isPlaying()) mediaPlayer.stop();
+                        mediaPlayer.reset();
+                        String query = trackInfo.getName() + " - " + trackInfo.getArtist();
+                        query = query.replace(" ", "%20");
+                        mediaPlayer.setDataSource(server.getTrackURL(query));
+                        mediaPlayer.prepare();
+                        mediaPlayer.start();
+                        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                            @Override
+                            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+
+                            }
+
+                            @Override
+                            public void onStartTrackingTouch(SeekBar seekBar) {
+
+                            }
+
+                            @Override
+                            public void onStopTrackingTouch(SeekBar seekBar) {
+                                System.out.println("seekto"+ seekBar.getProgress());
+
+                                int duration = mediaPlayer.getDuration();
+                                System.out.println(duration * seekBar.getProgress() / 100);
+                                mediaPlayer.seekTo(duration * seekBar.getProgress() / 100);
+
+
+
+                            }
+                        });
+
                     primaryProgressBarUpdater();
+
+
+
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -129,27 +130,6 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     private void initiview() {
         seekBar = (SeekBar) findViewById(R.id.seekBar);
         seekBar.setMax(99); // It means 100% .0-99
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                System.out.println("seekto"+ seekBar.getProgress());
-                int duration = mediaPlayer.getDuration();
-                System.out.println(duration *seekBar.getProgress()/100);
-
-                mediaPlayer.seekTo(duration *seekBar.getProgress()/100);
-
-            }
-        });
 
         pause=(ImageButton) findViewById(R.id.pause);
         pause.setOnClickListener(new View.OnClickListener() {
@@ -179,7 +159,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             @Override
             public void onSuccess(JSONObject result) {
                 try {
-                    lyric.setText(result.getString("lyric"));
+                    lyric.setText(parseLyric(result.getString("lyric")));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -200,8 +180,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
 
     private void primaryProgressBarUpdater() {
-//        System.out.println(mediaPlayer.getCurrentPosition());
-//        System.out.println(mediaPlayer.getDuration());
+        if (mediaPlayer==null) return;
         seekBar.setProgress((int) (((float) mediaPlayer.getCurrentPosition() / mediaPlayer.getDuration()) * 100)); // This math construction give a percentage of "was playing"/"song length"
         if (mediaPlayer.isPlaying()) {
             Runnable notification = new Runnable() {
@@ -213,29 +192,16 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         }
     }
 
-    private void secondaryProgressBarUpdater(int i) {
-        final int j = i;
-        seekBar.setSecondaryProgress(i);
-        if (mediaPlayer.isPlaying()) {
-            Runnable notification = new Runnable() {
-                public void run() {
-                   secondaryProgressBarUpdater(j);
-                }
-            };
-            handler.postDelayed(notification, 1000);
-        }
-    }
 
-    @Override
-    public void onBufferingUpdate(MediaPlayer mediaPlayer, int i) {
-//        System.out.println("buff");
-//        secondaryProgressBarUpdater(i);
-
-    }
-
-    @Override
-    public void onCompletion(MediaPlayer mediaPlayer) {
-
+    private String parseLyric(String s){
+//        System.out.println(s);
+       s=s.replaceAll("&#xE8;","è");
+       s=s.replaceAll("&#xE9;","é");
+       s=s.replaceAll("&#xF2;","ò");
+       s=s.replaceAll("&#xE0;","à");
+       s=s.replaceAll("&#xEC;","ì");
+       s=s.replaceAll("&#xF9;","ù");
+       return s;
     }
 
 

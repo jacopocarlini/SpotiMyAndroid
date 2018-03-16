@@ -17,27 +17,20 @@ public class Track implements Parcelable {
     private String album;
     private String date;
     private String cover;
+    private String id;
 
 
 
     private String lyric;
     private int duration;
 
-    public Track(String name, String artists, String album, String date, int duration) {
-        this.name = name;
-        this.artist = artists;
-        this.album = album;
-        this.date = date;
-        this.duration = duration;
-    }
+
 
     public Track(JSONObject o) {
         try {
             this.name = o.getString("name");
             this.artist =  o.getJSONArray("artists").getJSONObject(0).getString("name");
-//            this.album =  o.getString("album");
-//            this.date =  o.getString("date");
-//            this.duration =  o.getInt("duration");
+            this.id =  o.getString("id");
         } catch (JSONException e) {
             e.printStackTrace();
             this.name = "name";
@@ -45,6 +38,7 @@ public class Track implements Parcelable {
             this.album = "album";
             this.date = "date";
             this.duration = 0;
+            this.id = "";
         }
         try {
             this.cover =  o.getJSONObject("album").getJSONArray("images").getJSONObject(0).getString("url");
@@ -133,6 +127,10 @@ public class Track implements Parcelable {
         this.cover = cover;
     }
 
+    public String getId() {
+        return id;
+    }
+
     public boolean hasCover(){
         if (cover.equals("cover")) return false;
         else return true;
@@ -148,6 +146,7 @@ public class Track implements Parcelable {
                 ", cover='" + cover + '\'' +
                 ", lyric='" + lyric + '\'' +
                 ", duration=" + duration +
+                ", id=" + id +
                 '}';
     }
 
@@ -162,6 +161,7 @@ public class Track implements Parcelable {
         parcel.writeString(artist);
         parcel.writeString(album);
         parcel.writeString(cover);
+        parcel.writeString(id);
 
     }
 
@@ -171,7 +171,8 @@ public class Track implements Parcelable {
         artist = in.readString();
         album = in.readString();
         cover = in.readString();
-//        duration = in.readInt();
+        id = in.readString();
+
     }
 
     public static final Creator<Track> CREATOR = new Creator<Track>() {
@@ -185,6 +186,7 @@ public class Track implements Parcelable {
             return new Track[size];
         }
     };
+
 
 
 }

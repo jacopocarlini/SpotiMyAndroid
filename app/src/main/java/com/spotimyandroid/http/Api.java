@@ -19,9 +19,9 @@ import org.json.JSONObject;
 
 
 public class Api {
-//    private String SERVER_IP = "10.0.2.2"; //localhost
-    private String SERVER_IP = "192.168.1.14"; //pc
-
+//    private static String SERVER_IP = "10.0.2.2"; //localhost
+    private static String SERVER_IP = "192.168.1.15"; //pc
+//    private static String SERVER_IP = "104.40.208.29";
     public static final String TAG = "API";
     private Context context;
     private RequestQueue queue;
@@ -115,7 +115,7 @@ public class Api {
         call(url, callback);
     }
 
-    public String getTrackURL(String query) {
+    public static String getTrackURL(String query) {
         System.out.println(query);
         return  "http://" + SERVER_IP + ":3000/play/" + query.replace(" ","%20");
     }
