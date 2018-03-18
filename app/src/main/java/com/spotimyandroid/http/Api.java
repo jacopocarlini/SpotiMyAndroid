@@ -19,8 +19,8 @@ import org.json.JSONObject;
 
 
 public class Api {
-//    private static String SERVER_IP = "10.0.2.2"; //localhost
-    private static String SERVER_IP = "192.168.1.15"; //pc
+    private static String SERVER_IP = "10.0.2.2"; //localhost
+//    private static String SERVER_IP = "192.168.1.15"; //pc
 //    private static String SERVER_IP = "104.40.208.29";
     public static final String TAG = "API";
     private Context context;
@@ -115,15 +115,15 @@ public class Api {
         call(url, callback);
     }
 
-    public static String getTrackURL(String query) {
-        System.out.println(query);
-        return  "http://" + SERVER_IP + ":3000/play/" + query.replace(" ","%20");
+    public static String getTrackURL(String artist, String track) {
+
+        return  "http://" + SERVER_IP + ":3000/play/" + artist.replace(" ","%20")+"/"+track.replace(" ","%20");
     }
 
 
 
-    public void play(String query, final VolleyCallback callback) {
-        String url = "http://" + SERVER_IP + ":3000/play/" + query;
+    public void play(String artist, String track, final VolleyCallback callback) {
+        String url = "http://" + SERVER_IP + ":3000/play/" + artist+"/"+track;
         call(url, callback);
     }
 

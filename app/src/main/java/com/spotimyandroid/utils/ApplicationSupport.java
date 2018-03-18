@@ -95,7 +95,7 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
             String query = t.getName() + " - " + t.getArtist();
             query = query.replace(" ", "%20");
             try {
-                mediaPlayer.setDataSource(Api.getTrackURL(query));
+                mediaPlayer.setDataSource(Api.getTrackURL(getCurrentTrack().getArtist(), getCurrentTrack().getName()));
                 mp.prepare();
                 mp.start();
             } catch (IOException e) {

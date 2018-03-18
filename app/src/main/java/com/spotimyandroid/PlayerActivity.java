@@ -82,7 +82,7 @@ public class PlayerActivity extends AppCompatActivity {
                         mediaPlayer.reset();
                         String query = trackInfo.getName() + " - " + trackInfo.getArtist();
                         query = query.replace(" ", "%20");
-                        mediaPlayer.setDataSource(server.getTrackURL(query));
+                        mediaPlayer.setDataSource(server.getTrackURL(trackInfo.getArtist(), trackInfo.getName()));
                         mediaPlayer.prepare();
                         mediaPlayer.start();
                         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
