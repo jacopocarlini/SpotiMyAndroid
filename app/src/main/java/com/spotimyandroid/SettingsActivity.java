@@ -57,7 +57,7 @@ public class SettingsActivity extends AppCompatActivity {
         fast.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String fileContents="low";
+                String fileContents="slow";
                 if (fast.isChecked()) fileContents="fast";
 
                 try {

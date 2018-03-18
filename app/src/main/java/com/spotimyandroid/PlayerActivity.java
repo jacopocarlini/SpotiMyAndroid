@@ -26,7 +26,10 @@ import com.spotimyandroid.utils.ManageConection;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 /**
  * Created by Jacopo on 11/03/2018.
@@ -51,13 +54,12 @@ public class PlayerActivity extends AppCompatActivity{
     private AsyncTask downloadSong;
     private BroadcastReceiver mReceiver;
 
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
-//        Intent intent = getIntent();
-//        trackInfo = intent.getParcelableExtra("track");
-
+        System.out.println("oncreate player");
 
         as = ((ApplicationSupport) this.getApplication());
         System.out.println(as.getQueue());
@@ -65,7 +67,7 @@ public class PlayerActivity extends AppCompatActivity{
         server = new Api(this);
         trackInfo = as.getCurrentTrack();
 //        Log.d("PlayerActivity", trackInfo.toString());
-        System.out.println("QUI: "+trackInfo.toString());
+        System.out.println("INFO: "+trackInfo.toString());
 
         initiview();
 
@@ -74,50 +76,20 @@ public class PlayerActivity extends AppCompatActivity{
             @Override
             protected Object doInBackground(Object[] objects) {
 
-                try {
-
-                        if (mediaPlayer.isPlaying()) mediaPlayer.stop();
-                        mediaPlayer.reset();
-                        mediaPlayer.setDataSource(server.getTrackURL(trackInfo.getArtist(), trackInfo.getName()));
-                        mediaPlayer.prepare();
-                        mediaPlayer.start();
-                        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                            @Override
-                            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-
-                            }
-
-                            @Override
-                            public void onStartTrackingTouch(SeekBar seekBar) {
-
-                            }
-
-                            @Override
-                            public void onStopTrackingTouch(SeekBar seekBar) {
-                                System.out.println("seekto"+ seekBar.getProgress());
-
-                                int duration = mediaPlayer.getDuration();
-                                System.out.println(duration * seekBar.getProgress() / 100);
-                                mediaPlayer.seekTo(duration * seekBar.getProgress() / 100);
+        as.play();
 
 
-
-                            }
-                        });
-
-                    primaryProgressBarUpdater();
-
-
-
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
                 return null;
             }
         };
 
         downloadSong.execute();
+
+
+
+
+
+
 
 
         mReceiver = new BroadcastReceiver() {
@@ -126,6 +98,8 @@ public class PlayerActivity extends AppCompatActivity{
                 // Do what you need in here
                 trackInfo = as.getCurrentTrack();
                 initiview();
+                primaryProgressBarUpdater();
+                enableSeek();
             }
         };
 
@@ -145,10 +119,60 @@ public class PlayerActivity extends AppCompatActivity{
         super.onDestroy();
     }
 
+    private void enableSeek(){
+        try {
+            FileInputStream in = openFileInput("settings.txt");
+
+            InputStreamReader inputStreamReader = new InputStreamReader(in);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            StringBuilder sb = new StringBuilder();
+            String line;
+
+            while ((line = bufferedReader.readLine()) != null) {
+                sb.append(line);
+            }
+            if (!sb.toString().equals("fast")){
+                System.out.println("truw");
+                seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                        System.out.println("seekto"+ seekBar.getProgress());
+
+                        int duration = mediaPlayer.getDuration();
+                        System.out.println(duration * seekBar.getProgress() / 100);
+                        mediaPlayer.seekTo(duration * seekBar.getProgress() / 100);
+
+
+
+                    }
+                });
+
+            }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+
+        }
+    }
 
     private void initiview() {
         seekBar = (SeekBar) findViewById(R.id.seekBar);
         seekBar.setMax(99); // It means 100% .0-99
+        seekBar.setProgress(0);
+
+
+
 
         pause=(ImageButton) findViewById(R.id.pause);
         pause.setOnClickListener(new View.OnClickListener() {
@@ -162,6 +186,21 @@ public class PlayerActivity extends AppCompatActivity{
                     pause.setImageResource(android.R.drawable.ic_media_pause);
                     mediaPlayer.start();
                 }
+            }
+        });
+
+        ImageView next = (ImageView) findViewById(R.id.next);
+        ImageView previous = (ImageView) findViewById(R.id.previous);
+        next.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                as.nextTrack();
+            }
+        });
+        previous.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                as.previousTrack();
             }
         });
 
@@ -199,8 +238,14 @@ public class PlayerActivity extends AppCompatActivity{
 
 
     private void primaryProgressBarUpdater() {
+        System.out.println("progess");
         if (mediaPlayer==null) return;
-        seekBar.setProgress((int) (((float) mediaPlayer.getCurrentPosition() / mediaPlayer.getDuration()) * 100)); // This math construction give a percentage of "was playing"/"song length"
+//        int start =0;
+        int x=(int) (((float) mediaPlayer.getCurrentPosition() / mediaPlayer.getDuration()) * 100);
+//        if(mediaPlayer.getDuration()>0) start =1;
+//        x*=start;
+
+        seekBar.setProgress(x); // This math construction give a percentage of "was playing"/"song length"
         if (mediaPlayer.isPlaying()) {
             Runnable notification = new Runnable() {
                 public void run() {

@@ -91,6 +91,8 @@ public class AlbumActivity extends AppCompatActivity{
                     Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
 //                    intent.putExtra("track", tracks[finalI]);
                     as.newQueue(tracks);
+                    as.setPosition(finalI);
+                    as.play();
                     startActivity(intent);
                 }
             });

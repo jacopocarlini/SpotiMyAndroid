@@ -54,6 +54,14 @@ public class Track implements Parcelable {
 
     }
 
+    public Track() {
+        this.name = "name";
+        this.artist = "artists";
+        this.album = "album";
+        this.cover="cover";
+        this.date = "date";
+        this.id = "";
+    }
 
 
     public static Track[] toArray(JSONArray array){

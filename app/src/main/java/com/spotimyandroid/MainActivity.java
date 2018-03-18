@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private ApplicationSupport as;
     private MediaPlayer mediaPlayer;
     private BottomNavigationView bottomNavigationView;
+    private ImageView player;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,6 +126,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        this.player = (ImageView) findViewById(R.id.player);
+        player.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
+                startActivity(intent);
+            }
+        });
+
+
     }
 
     public void player(){
@@ -148,6 +159,21 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+         ImageView next = (ImageView) findViewById(R.id.next);
+         ImageView previous = (ImageView) findViewById(R.id.previous);
+         next.setOnClickListener(new View.OnClickListener() {
+             @Override
+             public void onClick(View view) {
+                 as.nextTrack();
+             }
+         });
+        previous.setOnClickListener(new View.OnClickListener() {
+             @Override
+             public void onClick(View view) {
+                 as.previousTrack();
+             }
+         });
     }
 
 
@@ -285,6 +311,7 @@ public class MainActivity extends AppCompatActivity {
 //                    intent.putExtra("song", message);
 //                    intent.putExtra("track", tracks[finalI]);
                     as.newQueue(tracks);
+                    as.setPosition(finalI);
                     startActivity(intent);
                 }
             });

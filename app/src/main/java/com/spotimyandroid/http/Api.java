@@ -142,8 +142,8 @@ public class Api {
                 sb.append(line);
             }
             System.out.println(sb);
-            if(sb.equals("fast")) return  "http://" + SERVER_IP + ":"+SERVER_PORT+"/playfast/" + sostituisci(artist)+"/"+ sostituisci(track);
-            else return  "http://" + SERVER_IP + ":"+SERVER_PORT+"/playfast/" + sostituisci(artist)+"/"+ sostituisci(track);
+            if(sb.toString().equals("fast")) return  "http://" + SERVER_IP + ":"+SERVER_PORT+"/playfast/" + sostituisci(artist)+"/"+ sostituisci(track);
+            else return  "http://" + SERVER_IP + ":"+SERVER_PORT+"/play/" + sostituisci(artist)+"/"+ sostituisci(track);
         } catch (IOException e) {
             e.printStackTrace();
             return  "http://" + SERVER_IP + ":"+SERVER_PORT+"/play/" + sostituisci(artist)+"/"+ sostituisci(track);

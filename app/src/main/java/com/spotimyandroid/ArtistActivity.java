@@ -129,7 +129,7 @@ public class ArtistActivity extends AppCompatActivity {
                     elem.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
+                            Intent intent = new Intent(getApplicationContext(), AlbumActivity.class);
                             intent.putExtra("album", albumsInfo[finalI]);
 //                            System.out.println(albumsInfo[finalI]);
                             startActivity(intent);

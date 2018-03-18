@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.AsyncTask;
 
 import com.spotimyandroid.http.Api;
 import com.spotimyandroid.resources.Track;
@@ -66,7 +67,7 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     }
 
     public Track getCurrentTrack(){
-        return queue.size()<=pointer? null : queue.get(pointer);
+        return queue.size()<=pointer? new Track() : queue.get(pointer);
     }
 
 //    public void addTrackToQueue(Track track) {
@@ -121,6 +122,39 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     }
 
 
+    public void setPosition(int position) {
+        this.pointer = position;
+    }
+
+    public void play() {
+
+        if (mp.isPlaying()) mp.stop();
+        mp.reset();
+        try {
+            mp.setDataSource(Api.getTrackURL(getCurrentTrack().getArtist(), getCurrentTrack().getName()));
+            mp.prepare();
+            mp.start();
+            Intent i = new Intent(BROADCAST_FILTER);
+            i.putExtra("next_track", true);
+            sendBroadcast(i);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
+
+    }
+
+    public void nextTrack() {
+        if(pointer+1>getLenghtQueue()) return;
+        pointer++;
+        play();
+
+    }
+    public void previousTrack() {
+        if (pointer-1<0) return;
+        pointer--;
+        play();
+
+    }
 }
