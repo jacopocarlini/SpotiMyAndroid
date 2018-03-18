@@ -1,4 +1,4 @@
-package com.spotimyandroid;
+package com.spotimyandroid.utils;
 
 /**
  * Created by Jacopo on 18/03/2018.

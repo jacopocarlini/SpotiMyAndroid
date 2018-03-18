@@ -6,7 +6,6 @@ import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 
-import com.spotimyandroid.PlayerActivity;
 import com.spotimyandroid.http.Api;
 import com.spotimyandroid.resources.Track;
 
@@ -14,7 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static com.spotimyandroid.ManageConection.BROADCAST_FILTER;
+import static com.spotimyandroid.utils.ManageConection.BROADCAST_FILTER;
 
 /**
  * Created by Jacopo on 13/03/2018.
