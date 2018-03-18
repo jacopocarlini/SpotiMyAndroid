@@ -151,6 +151,12 @@ public class Track implements Parcelable {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        Track t = (Track) obj;
+        return t.getId().equals(this.getId());
+    }
+
+    @Override
     public int describeContents() {
         return 0;
     }
