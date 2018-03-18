@@ -1,15 +1,20 @@
 package com.spotimyandroid.utils;
 
 import android.app.Application;
+import android.content.Intent;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 
+import com.spotimyandroid.PlayerActivity;
 import com.spotimyandroid.http.Api;
 import com.spotimyandroid.resources.Track;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+
+import static com.spotimyandroid.ManageConection.BROADCAST_FILTER;
 
 /**
  * Created by Jacopo on 13/03/2018.
@@ -65,18 +70,18 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         return queue.size()<=pointer? null : queue.get(pointer);
     }
 
-    public void addTrackToQueue(Track track) {
-        queue.add(track);
-    }
+//    public void addTrackToQueue(Track track) {
+//        queue.add(track);
+//    }
 
     public Track getNextTrack(){
         return (++pointer < queue.size()) ? queue.get(pointer) : null;
     }
 
-    public void resetQueue(){
-        pointer=0;
-        queue=new ArrayList<>();
-    }
+//    public void resetQueue(){
+//        pointer=0;
+//        queue=new ArrayList<>();
+//    }
 
     @Override
     public void onBufferingUpdate(MediaPlayer mediaPlayer, int i) {
@@ -98,9 +103,25 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
                 mediaPlayer.setDataSource(Api.getTrackURL(getCurrentTrack().getArtist(), getCurrentTrack().getName()));
                 mp.prepare();
                 mp.start();
+                Intent i = new Intent(BROADCAST_FILTER);
+                i.putExtra("next_track", true);
+                sendBroadcast(i);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
+
+    public void newQueue(Track[] tracks) {
+        queue = new ArrayList<>(Arrays.asList(tracks));
+        pointer=0;
+    }
+
+    public ArrayList<Track> getQueue() {
+        return queue;
+    }
+
+
+
+
 }

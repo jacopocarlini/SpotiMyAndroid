@@ -69,65 +69,70 @@ public class Api {
     public void findTrack(String query, final VolleyCallback callback) {
         // Instantiate the RequestQueue.
 
-        String url = "http://" + SERVER_IP + ":3000/track/" + query;
+        String url = "http://" + SERVER_IP + ":3000/track/" + sostituisci(query);
         call(url, callback);
     }
 
     public void findArtist(String query, final VolleyCallback callback) {
         // Instantiate the RequestQueue.
 
-        String url = "http://" + SERVER_IP + ":3000/artist/" + query;
+        String url = "http://" + SERVER_IP + ":3000/artist/" + sostituisci(query);
         call(url, callback);
     }
 
     public void findAlbum(String query, final VolleyCallback callback) {
         // Instantiate the RequestQueue.
 
-        String url = "http://" + SERVER_IP + ":3000/album/" + query;
+        String url = "http://" + SERVER_IP + ":3000/album/" + sostituisci(query);
         call(url, callback);
     }
 
     public void lyric(String artist, String track, final VolleyCallback callback) {
         // Instantiate the RequestQueue.
 
-        String url = "http://" + SERVER_IP + ":3000/lyric/" + artist+"/"+track;
+        String url = "http://" + SERVER_IP + ":3000/lyric/" + sostituisci(artist)+"/"+sostituisci(track);
         call(url, callback);
     }
 
     public void findTracksOfAlbum(String id, final VolleyCallback callback) {
         // Instantiate the RequestQueue.
 
-        String url = "http://" + SERVER_IP + ":3000/tracks_of_album/" + id;
+        String url = "http://" + SERVER_IP + ":3000/tracks_of_album/" + sostituisci(id);
         call(url, callback);
     }
 
     public void findAlbumsOfArtist(String id, final VolleyCallback callback) {
         // Instantiate the RequestQueue.
 
-        String url = "http://" + SERVER_IP + ":3000/albums_of_artist/" + id;
+        String url = "http://" + SERVER_IP + ":3000/albums_of_artist/" + sostituisci(id);
         call(url, callback);
     }
 
     public void findPopularOfArtist(String id, final VolleyCallback callback) {
         // Instantiate the RequestQueue.
 
-        String url = "http://" + SERVER_IP + ":3000/popular_of_artist/" + id;
+        String url = "http://" + SERVER_IP + ":3000/popular_of_artist/" + sostituisci(id);
         call(url, callback);
     }
 
     public static String getTrackURL(String artist, String track) {
-
-        return  "http://" + SERVER_IP + ":3000/play/" + artist.replace(" ","%20")+"/"+track.replace(" ","%20");
+        track = track.split("-")[0];
+        return  "http://" + SERVER_IP + ":3000/play/" + sostituisci(artist)+"/"+ sostituisci(track);
     }
 
 
 
     public void play(String artist, String track, final VolleyCallback callback) {
-        String url = "http://" + SERVER_IP + ":3000/play/" + artist+"/"+track;
+        String url = "http://" + SERVER_IP + ":3000/play/" + sostituisci(artist)+"/"+sostituisci(track);
         call(url, callback);
     }
 
 
+    public static String sostituisci(String s){
+        s=s.replaceAll(" ", "%20");
+        s=s.replaceAll("/","%2F");
+        return s;
+    }
 
     public void cancel() {
         if (queue != null) {

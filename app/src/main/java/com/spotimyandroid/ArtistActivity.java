@@ -79,7 +79,7 @@ public class ArtistActivity extends AppCompatActivity {
                 try {
                     tracksInfo= Track.toArray(result.getJSONArray("tracks"));
                     LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                    as.resetQueue();
+//                    as.resetQueue();
                     for (int i=0; i<5;i++){
                         tracksInfo[i].setAlbum(tracksInfo[i].getCover());
                         View elem = inflater.inflate(R.layout.item_album_track, null);
@@ -87,13 +87,14 @@ public class ArtistActivity extends AppCompatActivity {
                         track.setText(tracksInfo[i].getName());
                         TextView position = (TextView) elem.findViewById(R.id.position);
                         position.setText(Integer.toString(i+1));
-                        as.addTrackToQueue(tracksInfo[i]);
+//                        as.addTrackToQueue(tracksInfo[i]);
                         final int finalI = i;
                         elem.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
                                 Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
-                                intent.putExtra("track", tracksInfo[finalI]);
+//                                intent.putExtra("track", tracksInfo[finalI]);
+                                as.newQueue(tracksInfo);
                                 startActivity(intent);
                             }
                         });
@@ -130,6 +131,7 @@ public class ArtistActivity extends AppCompatActivity {
                         public void onClick(View view) {
                             Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
                             intent.putExtra("album", albumsInfo[finalI]);
+//                            System.out.println(albumsInfo[finalI]);
                             startActivity(intent);
                         }
                     });

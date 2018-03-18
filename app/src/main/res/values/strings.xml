@@ -12,5 +12,7 @@
     <string name="album">Album</string>
     <string name="hint">Search...</string>
     <string name="popular">Popular Tracks</string>
+    <string name="discover">Discover</string>
+    <string name="settings">Settings</string>
 
 </resources>

@@ -6,9 +6,12 @@ import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -44,13 +47,12 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout artistsView;
     private ApplicationSupport as;
     private MediaPlayer mediaPlayer;
-
+    private BottomNavigationView bottomNavigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        System.out.println("ON CREATE!!!!!");
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -76,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initview() {
+        this.bottomNavigationView = (BottomNavigationView) findViewById(R.id.nav);
         this.scrollView=(ScrollView) findViewById(R.id.results);
         this.searchView=(SearchView) findViewById(R.id.search);
         this.tracksView = (LinearLayout) findViewById(R.id.tracks);
@@ -110,7 +113,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                if (item.getItemId() == R.id.settings) {
+                    Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+                    startActivity(intent);
+                    return true;
+                }
+                return false;
+            }
+        });
 
     }
 
@@ -129,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
                     pause.setImageResource(android.R.drawable.ic_media_play);
                     mediaPlayer.pause();
                 }
-                else{
+                else if(as.getLenghtQueue()>0){
                     pause.setImageResource(android.R.drawable.ic_media_pause);
                     mediaPlayer.start();
                 }
@@ -252,7 +265,6 @@ public class MainActivity extends AppCompatActivity {
     public void addElemToTracksView(final Track[] tracks){
         tracksView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        as.resetQueue();
         for (int i =0 ;i<tracks.length;i++){
             View elem = inflater.inflate(R.layout.item_track, null);
             TextView name = (TextView) elem.findViewById(R.id.name);
@@ -262,17 +274,17 @@ public class MainActivity extends AppCompatActivity {
             TextView album = (TextView) elem.findViewById(R.id.album);
             album.setText(tracks[i].getAlbum());
             final int finalI = i;
-            as.addTrackToQueue(tracks[i]);
+//            as.addTrackToQueue(tracks[i]);
             elem.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
-                    TextView name = (TextView) view.findViewById(R.id.name);
-                    TextView artist = (TextView) view.findViewById(R.id.artist);
-                    String message = name.getText()+" - "+artist.getText();
-                    intent.putExtra("song", message);
-                    intent.putExtra("track", tracks[finalI]);
-
+//                    TextView name = (TextView) view.findViewById(R.id.name);
+//                    TextView artist = (TextView) view.findViewById(R.id.artist);
+//                    String message = name.getText()+" - "+artist.getText();
+//                    intent.putExtra("song", message);
+//                    intent.putExtra("track", tracks[finalI]);
+                    as.newQueue(tracks);
                     startActivity(intent);
                 }
             });

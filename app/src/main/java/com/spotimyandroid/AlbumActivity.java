@@ -42,7 +42,7 @@ public class AlbumActivity extends AppCompatActivity{
         as = (ApplicationSupport) this.getApplication();
         Intent intent = getIntent();
         albumInfo = intent.getParcelableExtra("album");
-        System.out.println(albumInfo);
+//        System.out.println(albumInfo);
         server = new Api(this);
         server.findTracksOfAlbum(albumInfo.getId(), new Api.VolleyCallback() {
             @Override
@@ -73,9 +73,10 @@ public class AlbumActivity extends AppCompatActivity{
         tracksView = (LinearLayout) findViewById(R.id.tracks);
         tracksView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        as.resetQueue();
+//        as.resetQueue();
         for (int i=0; i<tracks.length;i++){
-            tracks[i].setAlbum(albumInfo.getCover());
+            tracks[i].setCover(albumInfo.getCover());
+            tracks[i].setAlbum(albumInfo.getName());
             View elem = inflater.inflate(R.layout.item_album_track, null);
             final TextView track = (TextView) elem.findViewById(R.id.track);
             track.setText(tracks[i].getName());
@@ -83,12 +84,13 @@ public class AlbumActivity extends AppCompatActivity{
             position.setText(Integer.toString(i+1));
 
             final int finalI = i;
-            as.addTrackToQueue(tracks[i]);
+//            as.addTrackToQueue(tracks[i]);
             elem.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
-                    intent.putExtra("track", tracks[finalI]);
+//                    intent.putExtra("track", tracks[finalI]);
+                    as.newQueue(tracks);
                     startActivity(intent);
                 }
             });
@@ -97,7 +99,7 @@ public class AlbumActivity extends AppCompatActivity{
         }
 
         cover = (ImageView) findViewById(R.id.cover);
-        System.out.println(albumInfo);
+//        System.out.println(albumInfo);
         if (albumInfo.hasCover())
 //            new DownloadImageTask(cover).execute(albumInfo.getCover());
             Glide.with(this).load(albumInfo.getCover()).into(cover);

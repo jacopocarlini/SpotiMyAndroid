@@ -1,13 +1,18 @@
 package com.spotimyandroid;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.sip.SipSession;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
@@ -35,7 +40,7 @@ import static android.media.AudioAttributes.CONTENT_TYPE_MUSIC;
  * Created by Jacopo on 11/03/2018.
  */
 
-public class PlayerActivity extends AppCompatActivity {
+public class PlayerActivity extends AppCompatActivity{
 
     private SeekBar seekBar;
     private ImageButton previous;
@@ -51,37 +56,36 @@ public class PlayerActivity extends AppCompatActivity {
     private Track trackInfo;
     private Api server;
     private ApplicationSupport as;
+    private AsyncTask downloadSong;
+    private BroadcastReceiver mReceiver;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
-        Intent intent = getIntent();
+//        Intent intent = getIntent();
 //        trackInfo = intent.getParcelableExtra("track");
 
 
         as = ((ApplicationSupport) this.getApplication());
+        System.out.println(as.getQueue());
         mediaPlayer = as.getMP();
         server = new Api(this);
         trackInfo = as.getCurrentTrack();
-        Log.d("PlayerActivity", trackInfo.toString());
+//        Log.d("PlayerActivity", trackInfo.toString());
         System.out.println("QUI: "+trackInfo.toString());
 
         initiview();
 
 
-        AsyncTask downloadSong = new AsyncTask() {
+        downloadSong = new AsyncTask() {
             @Override
             protected Object doInBackground(Object[] objects) {
 
                 try {
 
-                        as.resetQueue();
-                        as.addTrackToQueue(trackInfo);
                         if (mediaPlayer.isPlaying()) mediaPlayer.stop();
                         mediaPlayer.reset();
-                        String query = trackInfo.getName() + " - " + trackInfo.getArtist();
-                        query = query.replace(" ", "%20");
                         mediaPlayer.setDataSource(server.getTrackURL(trackInfo.getArtist(), trackInfo.getName()));
                         mediaPlayer.prepare();
                         mediaPlayer.start();
@@ -124,8 +128,31 @@ public class PlayerActivity extends AppCompatActivity {
         downloadSong.execute();
 
 
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                // Do what you need in here
+                trackInfo = as.getCurrentTrack();
+                initiview();
+            }
+        };
+
 
     }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(mReceiver, new IntentFilter(ManageConection.BROADCAST_FILTER));
+    }
+
+    @Override
+    protected void onDestroy() {
+        unregisterReceiver(mReceiver);
+        super.onDestroy();
+    }
+
 
     private void initiview() {
         seekBar = (SeekBar) findViewById(R.id.seekBar);
@@ -203,6 +230,8 @@ public class PlayerActivity extends AppCompatActivity {
        s=s.replaceAll("&#xF9;","ù");
        return s;
     }
+
+
 
 
 
