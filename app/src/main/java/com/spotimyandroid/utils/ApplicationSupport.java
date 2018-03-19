@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.os.AsyncTask;
 
 import com.spotimyandroid.http.Api;
 import com.spotimyandroid.resources.Track;
@@ -14,7 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static com.spotimyandroid.utils.ManageConection.BROADCAST_FILTER;
+import static com.spotimyandroid.utils.StringsValues.BROADCAST_FILTER;
 
 /**
  * Created by Jacopo on 13/03/2018.
@@ -26,6 +25,7 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     private MediaPlayer mp = new MediaPlayer();
     private ArrayList<Track> queue = new ArrayList<>();
     private int pointer=0;
+    public String state;
 
 
     public void prepare(){
@@ -90,22 +90,26 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
 
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
+        state=StringsValues.FINISH;
         System.out.println("COMPLETATO");
         mp.stop();
         mp.reset();
         System.out.println(pointer);
         System.out.println(queue.size());
         if ( (++pointer < queue.size())) {
+            state=StringsValues.DOWNLOADING;
             Track t = queue.get(pointer);
             String query = t.getName() + " - " + t.getArtist();
             query = query.replace(" ", "%20");
             try {
-                mediaPlayer.setDataSource(Api.getTrackURL(getCurrentTrack().getArtist(), getCurrentTrack().getName()));
+                mediaPlayer.setDataSource(Api.getTrackURL(getCurrentTrack().getArtist(),getCurrentTrack().getAlbum(), getCurrentTrack().getName()));
                 mp.prepare();
                 mp.start();
+                state=StringsValues.PLAY;
                 Intent i = new Intent(BROADCAST_FILTER);
                 i.putExtra("next_track", true);
                 sendBroadcast(i);
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -131,9 +135,11 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         if (mp.isPlaying()) mp.stop();
         mp.reset();
         try {
-            mp.setDataSource(Api.getTrackURL(getCurrentTrack().getArtist(), getCurrentTrack().getName()));
+            state=StringsValues.DOWNLOADING;
+            mp.setDataSource(Api.getTrackURL(getCurrentTrack().getArtist(),getCurrentTrack().getAlbum(), getCurrentTrack().getName()));
             mp.prepare();
             mp.start();
+            state=StringsValues.PLAY;
             Intent i = new Intent(BROADCAST_FILTER);
             i.putExtra("next_track", true);
             sendBroadcast(i);
@@ -146,15 +152,23 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     }
 
     public void nextTrack() {
-        if(pointer+1>getLenghtQueue()) return;
-        pointer++;
-        play();
+        if (state == StringsValues.PLAY) {
+            if (pointer + 1 > getLenghtQueue()) return;
+            pointer++;
+            play();
+        }
 
     }
-    public void previousTrack() {
-        if (pointer-1<0) return;
-        pointer--;
-        play();
 
+    public void previousTrack() {
+        if(state==StringsValues.PLAY) {
+            if (pointer - 1 < 0) return;
+            pointer--;
+            play();
+        }
+    }
+
+    public int getPosition() {
+        return pointer;
     }
 }

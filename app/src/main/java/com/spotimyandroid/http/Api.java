@@ -28,9 +28,10 @@ import java.io.InputStreamReader;
 public class Api {
 //    private static String SERVER_IP = "10.0.2.2"; //localhost
 //    private static String SERVER_IP = "192.168.1.15"; //pc
-//    private static String SERVER_IP = "104.40.208.29";
-    private static String SERVER_IP = "casacarlini.homepc.it";
-    private static String SERVER_PORT = "3001";
+    private static String SERVER_IP = "104.40.208.29"; //azure
+//    private static String SERVER_IP = "casacarlini.homepc.it"; //raspberyy
+    private static String SERVER_PORT = "3000";
+//    private static String SERVER_PORT = "3001";
 
     public static final String TAG = "API";
     private static Context contextS;
@@ -127,7 +128,7 @@ public class Api {
         call(url, callback);
     }
 
-    public static String getTrackURL(String artist, String track) {
+    public static String getTrackURL(String artist, String album, String track) {
         track = track.split("-")[0];
         FileInputStream in = null;
         try {
@@ -142,11 +143,11 @@ public class Api {
                 sb.append(line);
             }
             System.out.println(sb);
-            if(sb.toString().equals("fast")) return  "http://" + SERVER_IP + ":"+SERVER_PORT+"/playfast/" + sostituisci(artist)+"/"+ sostituisci(track);
-            else return  "http://" + SERVER_IP + ":"+SERVER_PORT+"/play/" + sostituisci(artist)+"/"+ sostituisci(track);
+            if(sb.toString().equals("fast")) return  "http://" + SERVER_IP + ":"+SERVER_PORT+"/playfast/"+  sostituisci(artist)+"/"+sostituisci(track);
+            else return  "http://" + SERVER_IP + ":"+SERVER_PORT+"/play_and_save/" + sostituisci(artist)+"/" + sostituisci(album)+"/"+ sostituisci(track);
         } catch (IOException e) {
             e.printStackTrace();
-            return  "http://" + SERVER_IP + ":"+SERVER_PORT+"/play/" + sostituisci(artist)+"/"+ sostituisci(track);
+            return  "http://" + SERVER_IP + ":"+SERVER_PORT+"/play_and_save/" + sostituisci(artist)+"/"+ sostituisci(album)+"/"+ sostituisci(track);
         }
 
     }

@@ -1,7 +1,9 @@
 package com.spotimyandroid;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -26,11 +28,13 @@ import com.spotimyandroid.resources.Album;
 import com.spotimyandroid.resources.Artist;
 import com.spotimyandroid.resources.Track;
 import com.spotimyandroid.utils.ApplicationSupport;
+import com.spotimyandroid.utils.StringsValues;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
 import java.util.zip.Inflater;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -49,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private MediaPlayer mediaPlayer;
     private BottomNavigationView bottomNavigationView;
     private ImageView player;
+    private BroadcastReceiver mReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,14 +75,30 @@ public class MainActivity extends AppCompatActivity {
         mediaPlayer = as. getMP();
         initview();
 
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                // Do what you need in here
+                LinearLayout playerBar = (LinearLayout) findViewById(R.id.playerBar);
+                playerBar.setVisibility(View.VISIBLE);
+
+            }
+        };
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         player();
+        registerReceiver(mReceiver, new IntentFilter(StringsValues.BROADCAST_FILTER));
     }
 
+    @Override
+    protected void onDestroy() {
+        unregisterReceiver(mReceiver);
+        super.onDestroy();
+    }
     private void initview() {
         this.bottomNavigationView = (BottomNavigationView) findViewById(R.id.nav);
         this.scrollView=(ScrollView) findViewById(R.id.results);
@@ -126,19 +147,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        this.player = (ImageView) findViewById(R.id.player);
-        player.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
-                startActivity(intent);
-            }
-        });
+        player();
 
 
     }
 
     public void player(){
+        LinearLayout playerBar = (LinearLayout) findViewById(R.id.playerBar);
+        if(as.state==StringsValues.PLAY) playerBar.setVisibility(View.VISIBLE);
+        else playerBar.setVisibility(View.INVISIBLE);
         final ImageButton pause=(ImageButton) findViewById(R.id.pause);
         if(mediaPlayer.isPlaying()) {
             pause.setImageResource(android.R.drawable.ic_media_pause);
@@ -174,6 +191,15 @@ public class MainActivity extends AppCompatActivity {
                  as.previousTrack();
              }
          });
+
+        this.player = (ImageView) findViewById(R.id.player);
+        player.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
 
@@ -300,18 +326,14 @@ public class MainActivity extends AppCompatActivity {
             TextView album = (TextView) elem.findViewById(R.id.album);
             album.setText(tracks[i].getAlbum());
             final int finalI = i;
-//            as.addTrackToQueue(tracks[i]);
             elem.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
-//                    TextView name = (TextView) view.findViewById(R.id.name);
-//                    TextView artist = (TextView) view.findViewById(R.id.artist);
-//                    String message = name.getText()+" - "+artist.getText();
-//                    intent.putExtra("song", message);
-//                    intent.putExtra("track", tracks[finalI]);
-                    as.newQueue(tracks);
-                    as.setPosition(finalI);
+                    if(!as.getQueue().toArray().equals(tracks)) {
+                        as.newQueue(tracks);
+                    }
+                    if (as.getPosition()!=finalI) as.setPosition(finalI);
                     startActivity(intent);
                 }
             });

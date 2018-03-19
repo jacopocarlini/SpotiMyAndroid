@@ -21,7 +21,7 @@ import com.bumptech.glide.Glide;
 import com.spotimyandroid.http.Api;
 import com.spotimyandroid.resources.Track;
 import com.spotimyandroid.utils.ApplicationSupport;
-import com.spotimyandroid.utils.ManageConection;
+import com.spotimyandroid.utils.StringsValues;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -71,15 +71,14 @@ public class PlayerActivity extends AppCompatActivity{
 
         initiview();
 
+//        as.play();
+
 
         downloadSong = new AsyncTask() {
             @Override
             protected Object doInBackground(Object[] objects) {
-
-        as.play();
-
-
-                return null;
+            as.play();
+            return null;
             }
         };
 
@@ -110,7 +109,7 @@ public class PlayerActivity extends AppCompatActivity{
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(mReceiver, new IntentFilter(ManageConection.BROADCAST_FILTER));
+        registerReceiver(mReceiver, new IntentFilter(StringsValues.BROADCAST_FILTER));
     }
 
     @Override
@@ -120,6 +119,7 @@ public class PlayerActivity extends AppCompatActivity{
     }
 
     private void enableSeek(){
+        System.out.println("player enableSeek");
         try {
             FileInputStream in = openFileInput("settings.txt");
 
@@ -167,6 +167,7 @@ public class PlayerActivity extends AppCompatActivity{
     }
 
     private void initiview() {
+        System.out.println("player initiview");
         seekBar = (SeekBar) findViewById(R.id.seekBar);
         seekBar.setMax(99); // It means 100% .0-99
         seekBar.setProgress(0);
@@ -178,13 +179,15 @@ public class PlayerActivity extends AppCompatActivity{
         pause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(mediaPlayer.isPlaying()) {
-                    pause.setImageResource(android.R.drawable.ic_media_play);
-                    mediaPlayer.pause();
-                }
-                else{
-                    pause.setImageResource(android.R.drawable.ic_media_pause);
-                    mediaPlayer.start();
+                if(as.state==StringsValues.PLAY){
+                    if (mediaPlayer.isPlaying()) {
+                        pause.setImageResource(android.R.drawable.ic_media_play);
+                        mediaPlayer.pause();
+                    } else {
+                        pause.setImageResource(android.R.drawable.ic_media_pause);
+                        mediaPlayer.start();
+                        primaryProgressBarUpdater();
+                    }
                 }
             }
         });
@@ -238,12 +241,11 @@ public class PlayerActivity extends AppCompatActivity{
 
 
     private void primaryProgressBarUpdater() {
-        System.out.println("progess");
+//        System.out.println("progess");
         if (mediaPlayer==null) return;
-//        int start =0;
+        if(as.state!=StringsValues.PLAY) return;
         int x=(int) (((float) mediaPlayer.getCurrentPosition() / mediaPlayer.getDuration()) * 100);
-//        if(mediaPlayer.getDuration()>0) start =1;
-//        x*=start;
+
 
         seekBar.setProgress(x); // This math construction give a percentage of "was playing"/"song length"
         if (mediaPlayer.isPlaying()) {
