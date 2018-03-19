@@ -53,6 +53,7 @@ public class PlayerActivity extends AppCompatActivity{
     private ApplicationSupport as;
     private AsyncTask downloadSong;
     private BroadcastReceiver mReceiver;
+    private BroadcastReceiver mReceiver2;
 
 
     @Override
@@ -102,6 +103,16 @@ public class PlayerActivity extends AppCompatActivity{
             }
         };
 
+        mReceiver2 = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                // Do what you need in here
+                trackInfo = as.getCurrentTrack();
+                initiview();
+
+            }
+        };
+
 
     }
 
@@ -109,12 +120,14 @@ public class PlayerActivity extends AppCompatActivity{
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(mReceiver, new IntentFilter(StringsValues.BROADCAST_FILTER));
+        registerReceiver(mReceiver, new IntentFilter(StringsValues.BROADCAST_PLAY));
+        registerReceiver(mReceiver2, new IntentFilter(StringsValues.BROADCAST_NEXT));
     }
 
     @Override
     protected void onDestroy() {
         unregisterReceiver(mReceiver);
+        unregisterReceiver(mReceiver2);
         super.onDestroy();
     }
 

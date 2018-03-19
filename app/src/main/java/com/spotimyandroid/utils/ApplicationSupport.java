@@ -13,7 +13,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static com.spotimyandroid.utils.StringsValues.BROADCAST_FILTER;
+
+import static com.spotimyandroid.utils.StringsValues.BROADCAST_NEXT;
+import static com.spotimyandroid.utils.StringsValues.BROADCAST_PLAY;
 
 /**
  * Created by Jacopo on 13/03/2018.
@@ -102,12 +104,15 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
             String query = t.getName() + " - " + t.getArtist();
             query = query.replace(" ", "%20");
             try {
+                Intent i = new Intent(BROADCAST_NEXT);
+                i.putExtra("next_track", true);
+                sendBroadcast(i);
                 mediaPlayer.setDataSource(Api.getTrackURL(getCurrentTrack().getArtist(),getCurrentTrack().getAlbum(), getCurrentTrack().getName()));
                 mp.prepare();
                 mp.start();
                 state=StringsValues.PLAY;
-                Intent i = new Intent(BROADCAST_FILTER);
-                i.putExtra("next_track", true);
+                i = new Intent(BROADCAST_PLAY);
+                i.putExtra("play", true);
                 sendBroadcast(i);
 
             } catch (IOException e) {
@@ -140,7 +145,7 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
             mp.prepare();
             mp.start();
             state=StringsValues.PLAY;
-            Intent i = new Intent(BROADCAST_FILTER);
+            Intent i = new Intent(BROADCAST_PLAY);
             i.putExtra("next_track", true);
             sendBroadcast(i);
         } catch (IOException e) {

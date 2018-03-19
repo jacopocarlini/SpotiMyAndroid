@@ -5,7 +5,8 @@ package com.spotimyandroid.utils;
  */
 
 public class StringsValues {
-    public static final String BROADCAST_FILTER = "ManageConection_broadcast_receiver_intent_filter";
+    public static final String BROADCAST_NEXT = "next";
+    public static final String BROADCAST_PLAY = "play";
     public static final String DOWNLOADING = "downloading";
     public static final String PREPARED = "prepared";
     public static final String PLAY = "play";

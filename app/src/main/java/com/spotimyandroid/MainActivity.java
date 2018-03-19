@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         player();
-        registerReceiver(mReceiver, new IntentFilter(StringsValues.BROADCAST_FILTER));
+        registerReceiver(mReceiver, new IntentFilter(StringsValues.BROADCAST_PLAY));
     }
 
     @Override
