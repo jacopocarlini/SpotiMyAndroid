@@ -75,16 +75,20 @@ public class PlayerActivity extends AppCompatActivity{
 //        as.play();
 
 
-        downloadSong = new AsyncTask() {
-            @Override
-            protected Object doInBackground(Object[] objects) {
-            as.play();
-            return null;
-            }
-        };
+        Intent i = getIntent();
 
-        downloadSong.execute();
+        String info = i.getStringExtra("info");
+        if(!info.equals("openonly")) {
+            downloadSong = new AsyncTask() {
+                @Override
+                protected Object doInBackground(Object[] objects) {
+                    as.play();
+                    return null;
+                }
+            };
 
+            downloadSong.execute();
+        }
 
 
 
@@ -280,6 +284,7 @@ public class PlayerActivity extends AppCompatActivity{
        s=s.replaceAll("&#xE0;","à");
        s=s.replaceAll("&#xEC;","ì");
        s=s.replaceAll("&#xF9;","ù");
+       s=s.replaceAll("&#x2019;","'");
        return s;
     }
 

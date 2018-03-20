@@ -197,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
+                intent.putExtra("info","openonly");
                 startActivity(intent);
             }
         });
@@ -334,6 +335,7 @@ public class MainActivity extends AppCompatActivity {
                         as.newQueue(tracks);
                     }
                     if (as.getPosition()!=finalI) as.setPosition(finalI);
+                    intent.putExtra("info","info");
                     startActivity(intent);
                 }
             });

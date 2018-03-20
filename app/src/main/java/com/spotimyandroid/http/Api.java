@@ -28,10 +28,10 @@ import java.io.InputStreamReader;
 public class Api {
 //    private static String SERVER_IP = "10.0.2.2"; //localhost
 //    private static String SERVER_IP = "192.168.1.15"; //pc
-    private static String SERVER_IP = "104.40.208.29"; //azure
-//    private static String SERVER_IP = "casacarlini.homepc.it"; //raspberyy
-    private static String SERVER_PORT = "3000";
-//    private static String SERVER_PORT = "3001";
+//    private static String SERVER_IP = "104.40.208.29"; //azure
+    private static String SERVER_IP = "casacarlini.homepc.it"; //raspberyy
+//    private static String SERVER_PORT = "3000";
+    private static String SERVER_PORT = "3001";
 
     public static final String TAG = "API";
     private static Context contextS;

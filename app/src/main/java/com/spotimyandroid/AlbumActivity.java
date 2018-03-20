@@ -93,6 +93,7 @@ public class AlbumActivity extends AppCompatActivity{
                     as.newQueue(tracks);
                     as.setPosition(finalI);
                     as.play();
+                    intent.putExtra("info","info");
                     startActivity(intent);
                 }
             });
