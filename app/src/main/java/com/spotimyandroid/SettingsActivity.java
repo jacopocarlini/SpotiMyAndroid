@@ -28,6 +28,7 @@ public class SettingsActivity extends AppCompatActivity {
         final String filename="settings.txt";
         File file = new File(this.getFilesDir(), filename);
 
+        //TODO: usare sharedPreference
 
         try {
             FileInputStream in = openFileInput("settings.txt");

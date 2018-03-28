@@ -7,6 +7,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 /**
  * Created by Jacopo on 12/03/2018.
  */
@@ -40,6 +42,11 @@ public class Artist implements Parcelable {
 
 
     }
+
+    public Artist() {
+
+    }
+
     public static Artist[] toArray(JSONArray array) {
         Artist[] a = new Artist[array.length()];
         for (int i =0 ; i< array.length();i++){
@@ -53,6 +60,30 @@ public class Artist implements Parcelable {
         }
         return a;
     }
+
+    @Override
+    public String toString() {
+        return  name  +
+                ";" + image +
+                ";" + id ;
+    }
+    public static Artist[] toArray(String s) {
+        if(s.equals("")) return new Artist[0];
+        ArrayList<Artist> res=new ArrayList<>(5);
+        String[] a = s.split(",,,");
+        System.out.println(a.length);
+        for (int i =0; i<a.length;i++) {
+            String[] info = a[i].split(";");
+            System.out.println(info.length);
+            Artist t = new Artist();
+            t.setName(info[0]);
+            t.setImage(info[1]);
+            t.setId(info[2]);
+            res.add(t);
+        }
+        return res.toArray(new Artist[res.size()]);
+    }
+
 
     public String getName() {
         return name;

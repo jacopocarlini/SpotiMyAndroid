@@ -137,50 +137,31 @@ public class PlayerActivity extends AppCompatActivity{
 
     private void enableSeek(){
         System.out.println("player enableSeek");
-        try {
-            FileInputStream in = openFileInput("settings.txt");
-
-            InputStreamReader inputStreamReader = new InputStreamReader(in);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            StringBuilder sb = new StringBuilder();
-            String line;
-
-            while ((line = bufferedReader.readLine()) != null) {
-                sb.append(line);
-            }
-            if (!sb.toString().equals("fast")){
-                System.out.println("truw");
-                seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                    @Override
-                    public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-
-                    }
-
-                    @Override
-                    public void onStartTrackingTouch(SeekBar seekBar) {
-
-                    }
-
-                    @Override
-                    public void onStopTrackingTouch(SeekBar seekBar) {
-                        System.out.println("seekto"+ seekBar.getProgress());
-
-                        int duration = mediaPlayer.getDuration();
-                        System.out.println(duration * seekBar.getProgress() / 100);
-                        mediaPlayer.seekTo(duration * seekBar.getProgress() / 100);
-
-
-
-                    }
-                });
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
 
             }
 
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
 
-        } catch (IOException e) {
-            e.printStackTrace();
+            }
 
-        }
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                System.out.println("seekto"+ seekBar.getProgress());
+
+                int duration = mediaPlayer.getDuration();
+                System.out.println(duration * seekBar.getProgress() / 100);
+                mediaPlayer.seekTo(duration * seekBar.getProgress() / 100);
+
+
+
+            }
+        });
+
+
     }
 
     private void initiview() {

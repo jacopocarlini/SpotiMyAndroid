@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -34,6 +35,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Array;
 import java.util.zip.Inflater;
 
@@ -80,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 // Do what you need in here
                 LinearLayout playerBar = (LinearLayout) findViewById(R.id.playerBar);
-                playerBar.setVisibility(View.VISIBLE);
+//                playerBar.setVisibility(View.VISIBLE);
 
             }
         };
@@ -111,24 +117,28 @@ public class MainActivity extends AppCompatActivity {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
-                scrollView.setVisibility(View.INVISIBLE);
-                if (task[0]!=null) task[0].cancel(true);
-                doMySearch(s);
+//                scrollView.setVisibility(View.INVISIBLE);
+//                if (task[0]!=null) task[0].cancel(true);
+//                if(s.equals(""))recent();
+//                else doMySearch(s);
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(final String s) {
-                scrollView.setVisibility(View.INVISIBLE);
+//                scrollView.setVisibility(View.INVISIBLE);
                 if (task[0]!=null) task[0].cancel(true);
-                task[0] = new AsyncTask() {
-                    @Override
-                    protected Object doInBackground(Object[] objects) {
-                        doMySearch(s);
-                        return null;
-                    }
-                };
-                task[0].execute();
+                if(s.equals(""))recent();
+                else doMySearch(s);
+//                task[0] = new AsyncTask() {
+//                    @Override
+//                    protected Object doInBackground(Object[] objects) {
+//                        if(s.equals(""))recent();
+//                        else doMySearch(s);
+//                        return null;
+//                    }
+//                };
+//                task[0].execute();
 
 
                 return false;
@@ -147,10 +157,29 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        recent();
         player();
 
 
     }
+
+
+    public void recent(){
+        SharedPreferences sharedPref = getSharedPreferences( "recent", Context.MODE_PRIVATE );
+        String s = sharedPref.getString("tracks", "");
+        System.out.println("RECENT "+s);
+        addElemToTracksView(Track.toArray(s));
+
+        String a = sharedPref.getString("albums", "");
+        System.out.println("RECENT "+a);
+        addElemToAlbumsView(Album.toArray(a));
+
+        String ar = sharedPref.getString("artists", "");
+        System.out.println("RECENT "+ar);
+        addElemToArtistsView(Artist.toArray(ar));
+
+    }
+
 
     public void player(){
         LinearLayout playerBar = (LinearLayout) findViewById(R.id.playerBar);
@@ -227,7 +256,7 @@ public class MainActivity extends AppCompatActivity {
                                         try {
                                             JSONArray array = result.getJSONObject("albums").getJSONArray("items");
                                             addElemToAlbumsView(Album.toArray(array));
-                                            scrollView.setVisibility(View.VISIBLE);
+//                                            scrollView.setVisibility(View.VISIBLE);
                                         } catch (JSONException e) {
                                             System.out.println("errore");
                                             e.printStackTrace();
@@ -287,6 +316,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addElemToArtistsView(final Artist[] artists) {
+//        scrollView.setVisibility(View.VISIBLE);
         artistsView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         for (int i =0 ;i<artists.length;i++){
@@ -316,9 +346,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void addElemToTracksView(final Track[] tracks){
+//        scrollView.setVisibility(View.VISIBLE);
         tracksView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
         for (int i =0 ;i<tracks.length;i++){
+            System.out.println("ADDTRACK "+tracks[i]);
             View elem = inflater.inflate(R.layout.item_track, null);
             TextView name = (TextView) elem.findViewById(R.id.name);
             name.setText(tracks[i].getName());

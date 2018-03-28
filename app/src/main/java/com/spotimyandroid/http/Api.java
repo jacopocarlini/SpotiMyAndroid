@@ -26,12 +26,12 @@ import java.io.InputStreamReader;
 
 
 public class Api {
-//    private static String SERVER_IP = "10.0.2.2"; //localhost
+    private static String SERVER_IP = "10.0.2.2"; //localhost
 //    private static String SERVER_IP = "192.168.1.15"; //pc
 //    private static String SERVER_IP = "104.40.208.29"; //azure
-    private static String SERVER_IP = "casacarlini.homepc.it"; //raspberyy
-//    private static String SERVER_PORT = "3000";
-    private static String SERVER_PORT = "3001";
+//    private static String SERVER_IP = "casacarlini.homepc.it"; //raspberyy
+    private static String SERVER_PORT = "3000";
+//    private static String SERVER_PORT = "3001";
 
     public static final String TAG = "API";
     private static Context contextS;
@@ -130,25 +130,7 @@ public class Api {
 
     public static String getTrackURL(String artist, String album, String track) {
         track = track.split("-")[0];
-        FileInputStream in = null;
-        try {
-            in = contextS.getApplicationContext().openFileInput("settings.txt");
-
-        InputStreamReader inputStreamReader = new InputStreamReader(in);
-        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-        StringBuilder sb = new StringBuilder();
-        String line;
-
-            while ((line = bufferedReader.readLine()) != null) {
-                sb.append(line);
-            }
-            System.out.println(sb);
-            if(sb.toString().equals("fast")) return  "http://" + SERVER_IP + ":"+SERVER_PORT+"/playfast/"+  sostituisci(artist)+"/"+sostituisci(track);
-            else return  "http://" + SERVER_IP + ":"+SERVER_PORT+"/play_and_save/" + sostituisci(artist)+"/" + sostituisci(album)+"/"+ sostituisci(track);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return  "http://" + SERVER_IP + ":"+SERVER_PORT+"/play_and_save/" + sostituisci(artist)+"/"+ sostituisci(album)+"/"+ sostituisci(track);
-        }
+        return  "http://" + SERVER_IP + ":"+SERVER_PORT+"/play_torrent/" + sostituisci(artist)+"/" + sostituisci(album)+"/"+ sostituisci(track);
 
     }
 

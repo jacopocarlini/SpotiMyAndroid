@@ -49,6 +49,8 @@ public class ArtistActivity extends AppCompatActivity {
         server = new Api(this);
 
         initview();
+
+        as.addArtist(artistInfo);
     }
 
     private void initview() {

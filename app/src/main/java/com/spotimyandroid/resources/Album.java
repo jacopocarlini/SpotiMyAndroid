@@ -7,6 +7,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 /**
  * Created by Jacopo on 13/03/2018.
  */
@@ -43,6 +45,10 @@ public class Album implements Parcelable {
 
         }
 
+
+    }
+
+    public Album() {
 
     }
 
@@ -99,12 +105,31 @@ public class Album implements Parcelable {
 
     @Override
     public String toString() {
-        return "Album{" +
-                "name='" + name + '\'' +
-                ", artist='" + artist + '\'' +
-                ", cover='" + cover + '\'' +
-                ", id='" + id + '\'' +
-                '}';
+        return  name  +
+                ";" + artist +
+                ";" + cover +
+                ";" + id ;
+    }
+    public static Album[] toArray(String s) {
+        if(s.equals("")) return new Album[0];
+        ArrayList<Album> res=new ArrayList<>(5);
+        String[] a = s.split(",,,");
+        System.out.println(a.length);
+        for (int i =0; i<a.length;i++) {
+            String[] info = a[i].split(";");
+            System.out.println(info.length);
+            Album t = new Album();
+            t.setName(info[0]);
+            t.setArtist(info[1]);
+            t.setCover(info[2]);
+            t.setID(info[3]);
+            res.add(t);
+        }
+        return res.toArray(new Album[res.size()]);
+    }
+
+    private void setID(String id) {
+        this.id=id;
     }
 
     @Override
@@ -140,5 +165,6 @@ public class Album implements Parcelable {
             return new Album[size];
         }
     };
+
 
 }

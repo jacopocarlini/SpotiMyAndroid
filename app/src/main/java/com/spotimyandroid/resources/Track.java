@@ -7,6 +7,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 /**
  * Created by Jacopo on 11/03/2018.
  */
@@ -23,10 +25,11 @@ public class Track implements Parcelable {
 
     private String lyric;
     private int duration;
-
+    private JSONObject json;
 
 
     public Track(JSONObject o) {
+        json=o;
         try {
             this.name = o.getString("name");
             this.artist =  o.getJSONArray("artists").getJSONObject(0).getString("name");
@@ -60,8 +63,11 @@ public class Track implements Parcelable {
         this.album = "album";
         this.cover="cover";
         this.date = "date";
-        this.id = "";
+        this.lyric = "lyric";
+        this.duration = 0;
+        this.id = "id";
     }
+
 
 
     public static Track[] toArray(JSONArray array){
@@ -146,16 +152,36 @@ public class Track implements Parcelable {
 
     @Override
     public String toString() {
-        return "Track{" +
-                "name='" + name + '\'' +
-                ", artist='" + artist + '\'' +
-                ", album='" + album + '\'' +
-                ", date='" + date + '\'' +
-                ", cover='" + cover + '\'' +
-                ", lyric='" + lyric + '\'' +
-                ", duration=" + duration +
-                ", id=" + id +
-                '}';
+        return  name  +
+                ";" + artist +
+                ";" + album +
+                ";" + date +
+                ";" + cover +
+                ";" + lyric +
+                ";" + duration +
+                ";" + id ;
+    }
+
+    public static Track[] toArray(String s) {
+        if(s.equals("")) return new Track[0];
+        ArrayList<Track>res=new ArrayList<>(5);
+        String[] a = s.split(",,,");
+        System.out.println(a.length);
+        for (int i =0; i<a.length;i++) {
+            String[] info = a[i].split(";");
+            System.out.println(info.length);
+            Track t = new Track();
+            t.setName(info[0]);
+            t.setArtist(info[1]);
+            t.setAlbum(info[2]);
+            t.setDate(info[3]);
+            t.setCover(info[4]);
+            t.setLyric(info[5]);
+//            t.setDuration(Integer.parseInt(info[6]));
+            t.setID(info[7]);
+            res.add(t);
+        }
+        return res.toArray(new Track[res.size()]);
     }
 
     @Override
@@ -202,5 +228,12 @@ public class Track implements Parcelable {
     };
 
 
+    public JSONObject getJSON() {
+        return json;
+    }
 
+
+    public void setID(String ID) {
+        this.id = ID;
+    }
 }

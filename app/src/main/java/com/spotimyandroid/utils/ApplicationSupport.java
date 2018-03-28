@@ -1,15 +1,22 @@
 package com.spotimyandroid.utils;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 
 import com.spotimyandroid.http.Api;
+import com.spotimyandroid.resources.Album;
+import com.spotimyandroid.resources.Artist;
 import com.spotimyandroid.resources.Track;
 
+import org.json.JSONArray;
+
 import java.io.IOException;
+import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -28,6 +35,10 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     private ArrayList<Track> queue = new ArrayList<>();
     private int pointer=0;
     public String state;
+
+    private ArrayList<Track> recentTracks = new ArrayList<>(5);
+    private ArrayList<Album> recentAlbums= new ArrayList<>(5);;
+    private ArrayList<Artist> recentArtists= new ArrayList<>(5);;
 
 
     public void prepare(){
@@ -72,18 +83,12 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         return queue.size()<=pointer? new Track() : queue.get(pointer);
     }
 
-//    public void addTrackToQueue(Track track) {
-//        queue.add(track);
-//    }
 
     public Track getNextTrack(){
         return (++pointer < queue.size()) ? queue.get(pointer) : null;
     }
 
-//    public void resetQueue(){
-//        pointer=0;
-//        queue=new ArrayList<>();
-//    }
+
 
     @Override
     public void onBufferingUpdate(MediaPlayer mediaPlayer, int i) {
@@ -136,6 +141,7 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     }
 
     public void play() {
+        addTrack();
 
         if (mp.isPlaying()) mp.stop();
         mp.reset();
@@ -175,5 +181,70 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
 
     public int getPosition() {
         return pointer;
+    }
+
+    public void addTrack(){
+        if(recentTracks.size()==5){
+            recentTracks.set(0,recentTracks.get(1));
+            recentTracks.set(1,recentTracks.get(2));
+            recentTracks.set(2,recentTracks.get(3));
+            recentTracks.set(3,recentTracks.get(4));
+            recentTracks.add(getCurrentTrack());
+        }
+        else recentTracks.add(getCurrentTrack());
+        String str="";
+        for(int i= recentTracks.size()-1; i>=0 ; i--) {
+            Track t=recentTracks.get(i);
+            if(i==recentTracks.size()-1) str= str.concat(t.toString());
+            else str=str.concat(",,,"+t.toString());
+        }
+        SharedPreferences.Editor prefEditor = getSharedPreferences("recent", Context.MODE_PRIVATE).edit();
+        prefEditor.putString("tracks", str);
+        prefEditor.commit();
+        System.out.println("PLAY "+str);
+
+
+    }
+
+    public void addAlbum(Album info) {
+        if(recentAlbums.size()==5){
+            recentAlbums.set(0,recentAlbums.get(1));
+            recentAlbums.set(1,recentAlbums.get(2));
+            recentAlbums.set(2,recentAlbums.get(3));
+            recentAlbums.set(3,recentAlbums.get(4));
+            recentAlbums.add(info);
+        }
+        else recentAlbums.add(info);
+        String str="";
+        for(int i= recentAlbums.size()-1; i>=0 ; i--) {
+            Album t=recentAlbums.get(i);
+            if(i==recentAlbums.size()-1) str= str.concat(t.toString());
+            else str=str.concat(",,,"+t.toString());
+        }
+        SharedPreferences.Editor prefEditor = getSharedPreferences("recent", Context.MODE_PRIVATE).edit();
+        prefEditor.putString("albums", str);
+        prefEditor.commit();
+        System.out.println("ALBUM "+str);
+    }
+
+    public void addArtist(Artist info) {
+        if(recentArtists.size()==5){
+            recentArtists.set(0,recentArtists.get(1));
+            recentArtists.set(1,recentArtists.get(2));
+            recentArtists.set(2,recentArtists.get(3));
+            recentArtists.set(3,recentArtists.get(4));
+            recentArtists.add(info);
+        }
+        else recentArtists.add(info);
+        String str="";
+        for(int i= recentArtists.size()-1; i>=0 ; i--) {
+            Artist t=recentArtists.get(i);
+            if(i==recentArtists.size()-1) str= str.concat(t.toString());
+            else str=str.concat(",,,"+t.toString());
+        }
+        SharedPreferences.Editor prefEditor = getSharedPreferences("recent", Context.MODE_PRIVATE).edit();
+        prefEditor.putString("artists", str);
+        prefEditor.commit();
+        System.out.println("ARTIST "+str);
     }
 }
