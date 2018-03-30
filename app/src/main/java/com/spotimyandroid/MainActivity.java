@@ -10,7 +10,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.annotation.NonNull;
-import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -34,14 +33,6 @@ import com.spotimyandroid.utils.StringsValues;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.reflect.Array;
-import java.util.zip.Inflater;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -160,22 +151,28 @@ public class MainActivity extends AppCompatActivity {
         recent();
         player();
 
-
     }
 
 
     public void recent(){
+        TextView textTrack = (TextView) findViewById(R.id.textTracks);
+        TextView textAlbums = (TextView) findViewById(R.id.textAlbums);
+        TextView textArtists = (TextView) findViewById(R.id.textArtists);
+        textTrack.setText(R.string.recent_tracks);
+        textAlbums.setText(R.string.recent_albums);
+        textArtists.setText(R.string.recent_artists);
+
         SharedPreferences sharedPref = getSharedPreferences( "recent", Context.MODE_PRIVATE );
         String s = sharedPref.getString("tracks", "");
-        System.out.println("RECENT "+s);
+        as.addRecentTracks(Track.toArray(s));
         addElemToTracksView(Track.toArray(s));
 
         String a = sharedPref.getString("albums", "");
-        System.out.println("RECENT "+a);
+        as.addRecentAlbums(Album.toArray(a));
         addElemToAlbumsView(Album.toArray(a));
 
         String ar = sharedPref.getString("artists", "");
-        System.out.println("RECENT "+ar);
+        as.addRecentArtists(Artist.toArray(ar));
         addElemToArtistsView(Artist.toArray(ar));
 
     }
@@ -235,49 +232,30 @@ public class MainActivity extends AppCompatActivity {
 
     private void doMySearch(final String query) {
         System.out.println("do search");
+        TextView textTrack = (TextView) findViewById(R.id.textTracks);
+        TextView textAlbums = (TextView) findViewById(R.id.textAlbums);
+        TextView textArtists = (TextView) findViewById(R.id.textArtists);
+        textTrack.setText(R.string.tracks);
+        textAlbums.setText(R.string.albums);
+        textArtists.setText(R.string.artists);
+
         server.findTrack(query.replace(" ","%20"), new Api.VolleyCallback() {
             @Override
             public void onSuccess(JSONObject result) {
-                try {
-                    JSONArray array = result.getJSONObject("tracks").getJSONArray("items");
-
-                    addElemToTracksView(Track.toArray(array));
-
-                    server.findArtist(query, new Api.VolleyCallback() {
+            addElemToTracksView(Track.toArray(result));
+            server.findArtist(query, new Api.VolleyCallback() {
+                @Override
+                public void onSuccess(JSONObject result) {
+                    addElemToArtistsView(Artist.toArray(result));
+                    server.findAlbum(query, new Api.VolleyCallback() {
                         @Override
                         public void onSuccess(JSONObject result) {
-                            try {
-                                JSONArray array = result.getJSONObject("artists").getJSONArray("items");
-                                addElemToArtistsView(Artist.toArray(array));
-
-                                server.findAlbum(query, new Api.VolleyCallback() {
-                                    @Override
-                                    public void onSuccess(JSONObject result) {
-                                        try {
-                                            JSONArray array = result.getJSONObject("albums").getJSONArray("items");
-                                            addElemToAlbumsView(Album.toArray(array));
-//                                            scrollView.setVisibility(View.VISIBLE);
-                                        } catch (JSONException e) {
-                                            System.out.println("errore");
-                                            e.printStackTrace();
-                                        }
-
-                                    }
-                                });
-
-                            } catch (JSONException e) {
-                                System.out.println("errore");
-                                e.printStackTrace();
-                            }
-
+                                addElemToAlbumsView(Album.toArray(result));
+//                              scrollView.setVisibility(View.VISIBLE);
                         }
                     });
-
-                } catch (JSONException e) {
-                    System.out.println("errore");
-                    e.printStackTrace();
                 }
-
+            });
             }
         });
 
@@ -295,7 +273,6 @@ public class MainActivity extends AppCompatActivity {
             TextView name = (TextView) elem.findViewById(R.id.name);
             name.setText(albums[i].getName());
             ImageView cover = (ImageView) elem.findViewById(R.id.cover);
-//            System.out.println(artists[i].getImage());
             if (albums[i].hasCover()) {
 //                new DownloadImageTask(cover).execute(albums[i].getCover());
 //                setImage(albums[i].getCover(), cover);
@@ -324,7 +301,6 @@ public class MainActivity extends AppCompatActivity {
             TextView name = (TextView) elem.findViewById(R.id.artist);
             name.setText(artists[i].getName());
             CircleImageView image = (CircleImageView) elem.findViewById(R.id.image);
-//            System.out.println(artists[i].getImage());
             if (artists[i].hasImage()) {
 //                new DownloadImageTask(image).execute(artists[i].getImage());
 //                image.setImageBitmap(loadBitmap(artists[i].getImage()));
@@ -351,7 +327,6 @@ public class MainActivity extends AppCompatActivity {
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         for (int i =0 ;i<tracks.length;i++){
-            System.out.println("ADDTRACK "+tracks[i]);
             View elem = inflater.inflate(R.layout.item_track, null);
             TextView name = (TextView) elem.findViewById(R.id.name);
             name.setText(tracks[i].getName());
@@ -363,6 +338,7 @@ public class MainActivity extends AppCompatActivity {
             elem.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+
                     Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
                     if(!as.getQueue().toArray().equals(tracks)) {
                         as.newQueue(tracks);

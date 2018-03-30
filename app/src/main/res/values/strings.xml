@@ -14,5 +14,9 @@
     <string name="popular">Popular Tracks</string>
     <string name="discover">Discover</string>
     <string name="settings">Settings</string>
+    <string name="recent_tracks">Recent Tracks</string>
+    <string name="recent_albums">Recent Albums</string>
+    <string name="recent_artists">Recent Artists</string>
+    <string name="profile">Profile</string>
 
 </resources>

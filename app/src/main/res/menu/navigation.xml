@@ -10,6 +10,10 @@
         android:id="@+id/discover"
         android:icon="@drawable/ic_dashboard_black_24dp"
         android:title="@string/discover" />
+    <item
+        android:id="@+id/profile"
+        android:icon="@android:drawable/ic_menu_my_calendar"
+        android:title="@string/profile" />
 
     <item
         android:id="@+id/settings"

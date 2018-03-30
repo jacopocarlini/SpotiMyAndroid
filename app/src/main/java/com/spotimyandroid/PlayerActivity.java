@@ -60,15 +60,11 @@ public class PlayerActivity extends AppCompatActivity{
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
-        System.out.println("oncreate player");
 
         as = ((ApplicationSupport) this.getApplication());
-        System.out.println(as.getQueue());
         mediaPlayer = as.getMP();
         server = new Api(this);
         trackInfo = as.getCurrentTrack();
-//        Log.d("PlayerActivity", trackInfo.toString());
-        System.out.println("INFO: "+trackInfo.toString());
 
         initiview();
 
@@ -136,7 +132,6 @@ public class PlayerActivity extends AppCompatActivity{
     }
 
     private void enableSeek(){
-        System.out.println("player enableSeek");
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
@@ -150,10 +145,7 @@ public class PlayerActivity extends AppCompatActivity{
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                System.out.println("seekto"+ seekBar.getProgress());
-
                 int duration = mediaPlayer.getDuration();
-                System.out.println(duration * seekBar.getProgress() / 100);
                 mediaPlayer.seekTo(duration * seekBar.getProgress() / 100);
 
 
@@ -165,7 +157,6 @@ public class PlayerActivity extends AppCompatActivity{
     }
 
     private void initiview() {
-        System.out.println("player initiview");
         seekBar = (SeekBar) findViewById(R.id.seekBar);
         seekBar.setMax(99); // It means 100% .0-99
         seekBar.setProgress(0);
@@ -226,7 +217,6 @@ public class PlayerActivity extends AppCompatActivity{
         });
 
         cover=(ImageView) findViewById(R.id.cover);
-        System.out.println(trackInfo);
         if (trackInfo.hasCover()){
             Glide.with(this).load(trackInfo.getCover()).into(cover);
 
@@ -239,7 +229,6 @@ public class PlayerActivity extends AppCompatActivity{
 
 
     private void primaryProgressBarUpdater() {
-//        System.out.println("progess");
         if (mediaPlayer==null) return;
         if(as.state!=StringsValues.PLAY) return;
         int x=(int) (((float) mediaPlayer.getCurrentPosition() / mediaPlayer.getDuration()) * 100);
@@ -258,7 +247,6 @@ public class PlayerActivity extends AppCompatActivity{
 
 
     private String parseLyric(String s){
-//        System.out.println(s);
        s=s.replaceAll("&#xE8;","è");
        s=s.replaceAll("&#xE9;","é");
        s=s.replaceAll("&#xF2;","ò");

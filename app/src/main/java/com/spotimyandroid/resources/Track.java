@@ -20,6 +20,9 @@ public class Track implements Parcelable {
     private String date;
     private String cover;
     private String id;
+    private String albumid;
+    private String artistid;
+    private String artistImage;
 
 
 
@@ -34,6 +37,7 @@ public class Track implements Parcelable {
             this.name = o.getString("name");
             this.artist =  o.getJSONArray("artists").getJSONObject(0).getString("name");
             this.id =  o.getString("id");
+            this.artistid = o.getJSONArray("artists").getJSONObject(0).getString("id");
         } catch (JSONException e) {
             e.printStackTrace();
             this.name = "name";
@@ -43,17 +47,23 @@ public class Track implements Parcelable {
             this.duration = 0;
             this.id = "";
         }
+
         try {
-            this.cover =  o.getJSONObject("album").getJSONArray("images").getJSONObject(0).getString("url");
+            if(o.has("album")) {
+                this.cover = o.getJSONObject("album").getJSONArray("images").getJSONObject(0).getString("url");
+            }
         } catch (JSONException e) {
             this.cover="cover";
         }
         try {
-            this.album =  o.getJSONObject("album").getString("name");
+            if(o.has("album")) {
+                this.album = o.getJSONObject("album").getString("name");
+                this.albumid = o.getJSONObject("album").getString("id");
+            }
         } catch (JSONException e) {
             this.album="album";
         }
-
+        this.artistImage="";
 
     }
 
@@ -70,7 +80,23 @@ public class Track implements Parcelable {
 
 
 
-    public static Track[] toArray(JSONArray array){
+    public static Track[] toArray(JSONObject result){
+        JSONArray array = new JSONArray();
+        try {
+            if (!result.has("tracks"))
+                array = result.getJSONArray("items");
+            else{
+               try {
+                   result = result.getJSONObject("tracks");
+               }
+               catch (Exception e){
+                   array =  result.getJSONArray("tracks");
+               }
+
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         Track[] r = new Track[array.length()];
         for (int i =0 ; i< array.length();i++){
             try {
@@ -145,6 +171,30 @@ public class Track implements Parcelable {
         return id;
     }
 
+    public String getAlbumid() {
+        return albumid;
+    }
+
+    public void setAlbumid(String albumid) {
+        this.albumid = albumid;
+    }
+
+    public String getArtistid() {
+        return artistid;
+    }
+
+    public void setArtistid(String artistid) {
+        this.artistid = artistid;
+    }
+
+    public String getArtistImage() {
+        return artistImage;
+    }
+
+    public void setArtistImage(String artistImage) {
+        this.artistImage = artistImage;
+    }
+
     public boolean hasCover(){
         if (cover.equals("cover")) return false;
         else return true;
@@ -159,17 +209,23 @@ public class Track implements Parcelable {
                 ";" + cover +
                 ";" + lyric +
                 ";" + duration +
-                ";" + id ;
+                ";" + id +
+                ";" + albumid +
+                ";" + artistid +
+                ";" + artistImage ;
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
     }
 
     public static Track[] toArray(String s) {
         if(s.equals("")) return new Track[0];
         ArrayList<Track>res=new ArrayList<>(5);
         String[] a = s.split(",,,");
-        System.out.println(a.length);
         for (int i =0; i<a.length;i++) {
             String[] info = a[i].split(";");
-            System.out.println(info.length);
             Track t = new Track();
             t.setName(info[0]);
             t.setArtist(info[1]);
@@ -177,6 +233,9 @@ public class Track implements Parcelable {
             t.setDate(info[3]);
             t.setCover(info[4]);
             t.setLyric(info[5]);
+            t.setAlbumid(info[6]);
+            t.setArtistid(info[7]);
+            t.setArtistImage(info[8]);
 //            t.setDuration(Integer.parseInt(info[6]));
             t.setID(info[7]);
             res.add(t);
@@ -185,9 +244,13 @@ public class Track implements Parcelable {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        Track t = (Track) obj;
-        return t.getId().equals(this.getId());
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Track track = (Track) o;
+
+        return id != null ? id.equals(track.id) : track.id == null;
     }
 
     @Override
@@ -202,6 +265,9 @@ public class Track implements Parcelable {
         parcel.writeString(album);
         parcel.writeString(cover);
         parcel.writeString(id);
+        parcel.writeString(albumid);
+        parcel.writeString(artistid);
+        parcel.writeString(artistImage);
 
     }
 
@@ -212,6 +278,9 @@ public class Track implements Parcelable {
         album = in.readString();
         cover = in.readString();
         id = in.readString();
+        albumid = in.readString();
+        artistid = in.readString();
+        artistImage = in.readString();
 
     }
 
@@ -235,5 +304,14 @@ public class Track implements Parcelable {
 
     public void setID(String ID) {
         this.id = ID;
+    }
+
+    public void addArtistImage(JSONObject result) {
+        try {
+            artistImage = result.getJSONObject("artists").getJSONArray("items").getJSONObject(0)
+                    .getJSONArray("images").getJSONObject(0).getString("url");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }

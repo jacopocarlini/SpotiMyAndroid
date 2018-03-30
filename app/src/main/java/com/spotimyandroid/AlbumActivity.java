@@ -43,30 +43,19 @@ public class AlbumActivity extends AppCompatActivity{
         as = (ApplicationSupport) this.getApplication();
         Intent intent = getIntent();
         albumInfo = intent.getParcelableExtra("album");
-//        System.out.println(albumInfo);
         server = new Api(this);
         server.findTracksOfAlbum(albumInfo.getId(), new Api.VolleyCallback() {
             @Override
             public void onSuccess(JSONObject result) {
-                try {
-                    JSONArray array = result.getJSONArray("items");
-                    tracks = Track.toArray(array);
-
-                    initview();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+            tracks = Track.toArray(result);
+            initview();
 
             }
         });
 
         as.addAlbum(albumInfo);
-
-
-
-
-
     }
+
 
     private void initview() {
         albumView = (TextView) findViewById(R.id.album);
@@ -95,7 +84,7 @@ public class AlbumActivity extends AppCompatActivity{
 //                    intent.putExtra("track", tracks[finalI]);
                     as.newQueue(tracks);
                     as.setPosition(finalI);
-                    as.play();
+//                    as.play();
                     intent.putExtra("info","info");
                     startActivity(intent);
                 }
@@ -105,7 +94,6 @@ public class AlbumActivity extends AppCompatActivity{
         }
 
         cover = (ImageView) findViewById(R.id.cover);
-//        System.out.println(albumInfo);
         if (albumInfo.hasCover())
 //            new DownloadImageTask(cover).execute(albumInfo.getCover());
             Glide.with(this).load(albumInfo.getCover()).into(cover);

@@ -78,12 +78,12 @@ public class ArtistActivity extends AppCompatActivity {
         server.findPopularOfArtist(artistInfo.getId(), new Api.VolleyCallback() {
             @Override
             public void onSuccess(JSONObject result) {
-                try {
-                    tracksInfo= Track.toArray(result.getJSONArray("tracks"));
+
+                    tracksInfo= Track.toArray(result);
                     LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 //                    as.resetQueue();
                     for (int i=0; i<5;i++){
-                        tracksInfo[i].setAlbum(tracksInfo[i].getCover());
+                        tracksInfo[i].setCover(tracksInfo[i].getCover());
                         View elem = inflater.inflate(R.layout.item_album_track, null);
                         final TextView track = (TextView) elem.findViewById(R.id.track);
                         track.setText(tracksInfo[i].getName());
@@ -104,9 +104,7 @@ public class ArtistActivity extends AppCompatActivity {
                         popular.addView(elem);
 
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+
             }
         });
     }
@@ -115,12 +113,7 @@ public class ArtistActivity extends AppCompatActivity {
         server.findAlbumsOfArtist(artistInfo.getId(), new Api.VolleyCallback() {
             @Override
             public void onSuccess(JSONObject result) {
-                try {
-                    albumsInfo = Album.toArray(result.getJSONArray("items"));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
+                albumsInfo = Album.toArray(result);
                 LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 for (int i=0; i<albumsInfo.length;i++){
                     View elem = inflater.inflate(R.layout.item_album, null);

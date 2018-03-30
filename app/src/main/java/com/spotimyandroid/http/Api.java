@@ -8,17 +8,9 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.spotimyandroid.http.RequestQueue_Singeton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
 
 /**
  * Created by Jacopo on 11/03/2018.
@@ -54,7 +46,6 @@ public class Api {
                     @Override
                     public void onResponse(JSONObject response) {
                         // Display the first 500 characters of the response string.
-//                        Log.d("response", response.toString());
                         callback.onSuccess(response);
                     }
                 }, new Response.ErrorListener() {

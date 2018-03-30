@@ -19,7 +19,7 @@ public class Artist implements Parcelable {
     private String image;
     private String id;
 
-    public Artist(JSONObject o) {
+    private Artist(JSONObject o) {
         try {
             this.name = o.getString("name");
             this.id = o.getString("id");
@@ -47,7 +47,13 @@ public class Artist implements Parcelable {
 
     }
 
-    public static Artist[] toArray(JSONArray array) {
+    public static Artist[] toArray(JSONObject result) {
+        JSONArray array = null;
+        try {
+            array = result.getJSONObject("artists").getJSONArray("items");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         Artist[] a = new Artist[array.length()];
         for (int i =0 ; i< array.length();i++){
             try {
@@ -71,10 +77,8 @@ public class Artist implements Parcelable {
         if(s.equals("")) return new Artist[0];
         ArrayList<Artist> res=new ArrayList<>(5);
         String[] a = s.split(",,,");
-        System.out.println(a.length);
         for (int i =0; i<a.length;i++) {
             String[] info = a[i].split(";");
-            System.out.println(info.length);
             Artist t = new Artist();
             t.setName(info[0]);
             t.setImage(info[1]);
@@ -114,6 +118,20 @@ public class Artist implements Parcelable {
         else return true;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Artist artist = (Artist) o;
+
+        return id != null ? id.equals(artist.id) : artist.id == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
 
     @Override
     public int describeContents() {
