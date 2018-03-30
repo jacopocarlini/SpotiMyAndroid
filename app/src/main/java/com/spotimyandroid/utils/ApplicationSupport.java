@@ -32,7 +32,7 @@ import static com.spotimyandroid.utils.StringsValues.BROADCAST_PLAY;
 
 
 public class ApplicationSupport extends Application  implements MediaPlayer.OnCompletionListener,
-        MediaPlayer.OnBufferingUpdateListener {
+        MediaPlayer.OnBufferingUpdateListener{
     private MediaPlayer mp = new MediaPlayer();
     private ArrayList<Track> queue = new ArrayList<>();
     private int pointer=0;
@@ -149,12 +149,24 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         try {
             state=StringsValues.DOWNLOADING;
             mp.setDataSource(Api.getTrackURL(getCurrentTrack().getArtist(),getCurrentTrack().getAlbum(), getCurrentTrack().getName()));
-            mp.prepare();
-            mp.start();
-            state=StringsValues.PLAY;
-            Intent i = new Intent(BROADCAST_PLAY);
-            i.putExtra("next_track", true);
-            sendBroadcast(i);
+            System.out.println("setDatasource");
+            mp.prepareAsync();
+            //mp3 will be started after completion of preparing...
+            mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+
+                @Override
+                public void onPrepared(MediaPlayer player) {
+                    System.out.println("preparate");
+                    player.start();
+                    state=StringsValues.PLAY;
+                    Intent i = new Intent(BROADCAST_PLAY);
+                    i.putExtra("next_track", true);
+                    sendBroadcast(i);
+                }
+
+            });
+
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -185,7 +197,9 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     }
 
     public void addTrack(){
-        if(recentTracks.contains(getCurrentTrack())) return;
+        if(recentTracks.contains(getCurrentTrack())){
+          return;
+        }
         server = new Api(getApplicationContext());
         server.findArtist(getCurrentTrack().getArtist(), new Api.VolleyCallback() {
             @Override
@@ -193,10 +207,7 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
                 getCurrentTrack().addArtistImage(result);
                 System.out.println("attualmente ci sono "+recentTracks.size()+ " tracce recenti");
                 if(recentTracks.size()==5){
-                    recentTracks.set(0,recentTracks.get(1));
-                    recentTracks.set(1,recentTracks.get(2));
-                    recentTracks.set(2,recentTracks.get(3));
-                    recentTracks.set(3,recentTracks.get(4));
+                    recentTracks.remove(0);
                     recentTracks.add(getCurrentTrack());
                 }
                 else recentTracks.add(getCurrentTrack());
@@ -271,16 +282,29 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         prefEditor.commit();
     }
 
-
     public void addRecentTracks(Track[] tracks) {
-        Collections.addAll(recentTracks, tracks);
+        for (Track track: tracks) {
+            if(!recentTracks.contains(track)){
+                recentTracks.add(track);
+            }
+        }
     }
 
     public void addRecentAlbums(Album[] albums) {
-        Collections.addAll(recentAlbums, albums);
+        for (Album album: albums) {
+            if(!recentAlbums.contains(album)){
+                recentAlbums.add(album);
+            }
+        }
     }
 
     public void addRecentArtists(Artist[] artists) {
-        Collections.addAll(recentArtists, artists);
+        for (Artist artist: artists) {
+            if(!recentArtists.contains(artist)){
+                recentArtists.add(artist);
+            }
+        }
     }
+
+
 }

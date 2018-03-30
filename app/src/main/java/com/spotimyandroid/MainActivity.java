@@ -76,8 +76,7 @@ public class MainActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 // Do what you need in here
                 LinearLayout playerBar = (LinearLayout) findViewById(R.id.playerBar);
-//                playerBar.setVisibility(View.VISIBLE);
-
+                playerBar.setVisibility(View.VISIBLE);
             }
         };
 
@@ -134,6 +133,23 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottombar);
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                if (item.getItemId() == R.id.settings) {
+                    Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+                    startActivity(intent);
+                    return true;
+                }
+                if (item.getItemId() == R.id.profile) {
+                    Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
+                    startActivity(intent);
+                    return true;
+                }
+                return false;
+            }
+        });
 
         recent();
         player();
@@ -171,33 +187,33 @@ public class MainActivity extends AppCompatActivity {
         else playerBar.setVisibility(View.INVISIBLE);
         final ImageButton pause=(ImageButton) findViewById(R.id.pause);
         if(mediaPlayer.isPlaying()) {
-            pause.setImageResource(android.R.drawable.ic_media_pause);
+            pause.setImageResource(R.drawable.ic_pause_black_24dp);
         }
         else{
-            pause.setImageResource(android.R.drawable.ic_media_play);
+            pause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
         }
         pause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(mediaPlayer.isPlaying()) {
-                    pause.setImageResource(android.R.drawable.ic_media_play);
+                    pause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
                     mediaPlayer.pause();
                 }
                 else if(as.getLenghtQueue()>0){
-                    pause.setImageResource(android.R.drawable.ic_media_pause);
+                    pause.setImageResource(R.drawable.ic_pause_black_24dp);
                     mediaPlayer.start();
                 }
             }
         });
 
-         ImageView next = (ImageView) findViewById(R.id.next);
-         ImageView previous = (ImageView) findViewById(R.id.previous);
-         next.setOnClickListener(new View.OnClickListener() {
-             @Override
-             public void onClick(View view) {
-                 as.nextTrack();
-             }
-         });
+        ImageView next = (ImageView) findViewById(R.id.next);
+        ImageView previous = (ImageView) findViewById(R.id.previous);
+        next.setOnClickListener(new View.OnClickListener() {
+         @Override
+         public void onClick(View view) {
+             as.nextTrack();
+         }
+        });
         previous.setOnClickListener(new View.OnClickListener() {
              @Override
              public void onClick(View view) {
@@ -330,8 +346,8 @@ public class MainActivity extends AppCompatActivity {
                     if(!as.getQueue().toArray().equals(tracks)) {
                         as.newQueue(tracks);
                     }
-                    if (as.getPosition()!=finalI) as.setPosition(finalI);
-                    intent.putExtra("info","info");
+                    as.setPosition(finalI);
+                    intent.putExtra("info","play");
                     startActivity(intent);
                 }
             });

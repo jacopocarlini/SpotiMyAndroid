@@ -60,7 +60,7 @@ public class Album implements Parcelable {
     }
 
     public static Album[] toArray(JSONObject result) {
-        JSONArray array = null;
+        JSONArray array = new JSONArray();
         try {
             if  (result.has("albums"))
                 array = result.getJSONObject("albums").getJSONArray("items");

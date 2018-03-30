@@ -18,5 +18,7 @@
     <string name="recent_albums">Recent Albums</string>
     <string name="recent_artists">Recent Artists</string>
     <string name="profile">Profile</string>
+    <string name="queue">Queue</string>
+    <string name="playlists">Playlists</string>
 
 </resources>

@@ -97,7 +97,8 @@ public class ArtistActivity extends AppCompatActivity {
                                 Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
 //                                intent.putExtra("track", tracksInfo[finalI]);
                                 as.newQueue(tracksInfo);
-                                intent.putExtra("info","info");
+                                as.setPosition(finalI);
+                                intent.putExtra("info","play");
                                 startActivity(intent);
                             }
                         });

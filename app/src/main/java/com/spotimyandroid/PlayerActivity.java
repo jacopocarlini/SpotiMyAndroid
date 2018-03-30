@@ -52,8 +52,8 @@ public class PlayerActivity extends AppCompatActivity{
     private Api server;
     private ApplicationSupport as;
     private AsyncTask downloadSong;
-    private BroadcastReceiver mReceiver;
-    private BroadcastReceiver mReceiver2;
+    private BroadcastReceiver mReceiverPlay;
+    private BroadcastReceiver mReceiverNext;
 
 
     @Override
@@ -68,31 +68,23 @@ public class PlayerActivity extends AppCompatActivity{
 
         initiview();
 
-//        as.play();
-
-
         Intent i = getIntent();
-
         String info = i.getStringExtra("info");
         if(!info.equals("openonly")) {
-            downloadSong = new AsyncTask() {
-                @Override
-                protected Object doInBackground(Object[] objects) {
-                    as.play();
-                    return null;
-                }
-            };
-
-            downloadSong.execute();
+            as.play();
+//            downloadSong = new AsyncTask() {
+//                @Override
+//                protected Object doInBackground(Object[] objects) {
+//                    as.play();
+//                    return null;
+//                }
+//            };
+//
+//            downloadSong.execute();
         }
 
 
-
-
-
-
-
-        mReceiver = new BroadcastReceiver() {
+        mReceiverPlay = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 // Do what you need in here
@@ -103,12 +95,14 @@ public class PlayerActivity extends AppCompatActivity{
             }
         };
 
-        mReceiver2 = new BroadcastReceiver() {
+        mReceiverNext = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 // Do what you need in here
                 trackInfo = as.getCurrentTrack();
                 initiview();
+                primaryProgressBarUpdater();
+                enableSeek();
 
             }
         };
@@ -120,14 +114,14 @@ public class PlayerActivity extends AppCompatActivity{
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(mReceiver, new IntentFilter(StringsValues.BROADCAST_PLAY));
-        registerReceiver(mReceiver2, new IntentFilter(StringsValues.BROADCAST_NEXT));
+        registerReceiver(mReceiverPlay, new IntentFilter(StringsValues.BROADCAST_PLAY));
+        registerReceiver(mReceiverNext, new IntentFilter(StringsValues.BROADCAST_NEXT));
     }
 
     @Override
     protected void onDestroy() {
-        unregisterReceiver(mReceiver);
-        unregisterReceiver(mReceiver2);
+        unregisterReceiver(mReceiverPlay);
+        unregisterReceiver(mReceiverNext);
         super.onDestroy();
     }
 
@@ -162,18 +156,16 @@ public class PlayerActivity extends AppCompatActivity{
         seekBar.setProgress(0);
 
 
-
-
         pause=(ImageButton) findViewById(R.id.pause);
         pause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(as.state==StringsValues.PLAY){
                     if (mediaPlayer.isPlaying()) {
-                        pause.setImageResource(android.R.drawable.ic_media_play);
+                        pause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
                         mediaPlayer.pause();
                     } else {
-                        pause.setImageResource(android.R.drawable.ic_media_pause);
+                        pause.setImageResource(R.drawable.ic_pause_black_24dp);
                         mediaPlayer.start();
                         primaryProgressBarUpdater();
                     }
