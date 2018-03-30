@@ -48,7 +48,7 @@ public class Artist implements Parcelable {
     }
 
     public static Artist[] toArray(JSONObject result) {
-        JSONArray array = null;
+        JSONArray array = new JSONArray();
         try {
             array = result.getJSONObject("artists").getJSONArray("items");
         } catch (JSONException e) {
