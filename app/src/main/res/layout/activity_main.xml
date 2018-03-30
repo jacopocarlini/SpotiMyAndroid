@@ -253,13 +253,23 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:paddingBottom="8dp"
+        android:paddingTop="8dp"
         android:background="@color/colorPrimaryDark"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <ImageView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_weight="1"
+            android:tint="@color/colorAccent"
             app:srcCompat="@drawable/ic_home_black_24dp" />
+        <ImageView
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_weight="1"
+            android:tint="@color/silver"
+            app:srcCompat="@drawable/ic_dashboard_black_24dp" />
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

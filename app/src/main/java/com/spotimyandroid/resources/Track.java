@@ -87,7 +87,9 @@ public class Track implements Parcelable {
                 array = result.getJSONArray("items");
             else{
                try {
+                   System.out.println("json");
                    result = result.getJSONObject("tracks");
+                   array = result.getJSONArray("items");
                }
                catch (Exception e){
                    array =  result.getJSONArray("tracks");
@@ -233,11 +235,13 @@ public class Track implements Parcelable {
             t.setDate(info[3]);
             t.setCover(info[4]);
             t.setLyric(info[5]);
-            t.setAlbumid(info[6]);
-            t.setArtistid(info[7]);
-            t.setArtistImage(info[8]);
-//            t.setDuration(Integer.parseInt(info[6]));
+            //            t.setDuration(Integer.parseInt(info[6]));
             t.setID(info[7]);
+            t.setAlbumid(info[8]);
+            t.setArtistid(info[9]);
+            t.setArtistImage(info[10]);
+
+
             res.add(t);
         }
         return res.toArray(new Track[res.size()]);

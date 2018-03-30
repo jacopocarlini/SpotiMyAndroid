@@ -312,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
 //        scrollView.setVisibility(View.VISIBLE);
         tracksView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
+        System.out.println("trovate tracks " + tracks.length);
         for (int i =0 ;i<tracks.length;i++){
             View elem = inflater.inflate(R.layout.item_track, null);
             TextView name = (TextView) elem.findViewById(R.id.name);
