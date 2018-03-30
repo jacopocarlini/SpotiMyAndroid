@@ -22,7 +22,7 @@ Import the project in Android Studio.
 
 
 ## Screenshoots
-*working in progress... *
+![alt tag](https://github.com/jacopo1395/SpotiMyAndroid/blob/master/screenshots/screenshots.png)
 
 
 
