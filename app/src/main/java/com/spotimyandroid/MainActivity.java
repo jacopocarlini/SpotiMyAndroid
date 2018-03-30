@@ -48,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout artistsView;
     private ApplicationSupport as;
     private MediaPlayer mediaPlayer;
-    private BottomNavigationView bottomNavigationView;
     private ImageView player;
     private BroadcastReceiver mReceiver;
 
@@ -97,7 +96,6 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
     private void initview() {
-        this.bottomNavigationView = (BottomNavigationView) findViewById(R.id.nav);
         this.scrollView=(ScrollView) findViewById(R.id.results);
         this.searchView=(SearchView) findViewById(R.id.search);
         this.tracksView = (LinearLayout) findViewById(R.id.tracks);
@@ -136,17 +134,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                if (item.getItemId() == R.id.settings) {
-                    Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-                    startActivity(intent);
-                    return true;
-                }
-                return false;
-            }
-        });
 
         recent();
         player();
