@@ -127,13 +127,11 @@ public class ArtistActivity extends AppCompatActivity {
                 if (item.getItemId() == R.id.settings) {
                     Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
                     startActivity(intent);
-                    finish();
                     return true;
                 }
                 if (item.getItemId() == R.id.profile) {
                     Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
                     startActivity(intent);
-                    finish();
                     return true;
                 }
                 return false;

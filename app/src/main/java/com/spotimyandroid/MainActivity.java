@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(String s) {
 //                scrollView.setVisibility(View.INVISIBLE);
-                if (task[0]!=null) task[0].cancel(true);
+//                if (task[0]!=null) task[0].cancel(true);
                 if(s.equals(""))recent();
                 else doMySearch(s);
                 return false;
@@ -123,9 +123,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextChange(final String s) {
 //                scrollView.setVisibility(View.INVISIBLE);
-                if (task[0]!=null) task[0].cancel(true);
+//                if (task[0]!=null) task[0].cancel(true);
                 if(s.equals(""))recent();
-//                else doMySearch(s);
+                else doMySearch(s);
 //                task[0] = new AsyncTask() {
 //                    @Override
 //                    protected Object doInBackground(Object[] objects) {
@@ -152,13 +152,13 @@ public class MainActivity extends AppCompatActivity {
                 if (item.getItemId() == R.id.settings) {
                     Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
                     startActivity(intent);
-                    finish();
+
                     return true;
                 }
                 if (item.getItemId() == R.id.profile) {
                     Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
                     startActivity(intent);
-                    finish();
+
                     return true;
                 }
                 return false;
