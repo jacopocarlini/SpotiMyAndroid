@@ -28,6 +28,7 @@ import com.spotimyandroid.resources.Album;
 import com.spotimyandroid.resources.Artist;
 import com.spotimyandroid.resources.Track;
 import com.spotimyandroid.utils.ApplicationSupport;
+import com.spotimyandroid.utils.BottomNavigationViewHelper;
 import com.spotimyandroid.utils.StringsValues;
 
 import org.json.JSONArray;
@@ -50,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private MediaPlayer mediaPlayer;
     private ImageView player;
     private BroadcastReceiver mReceiver;
+    private ImageButton pause;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
             as.prepare();
         }
 
-        mediaPlayer = as. getMP();
+        mediaPlayer = as.getMP();
         initview();
 
         mReceiver = new BroadcastReceiver() {
@@ -77,6 +79,12 @@ public class MainActivity extends AppCompatActivity {
                 // Do what you need in here
                 LinearLayout playerBar = (LinearLayout) findViewById(R.id.playerBar);
                 playerBar.setVisibility(View.VISIBLE);
+                if(mediaPlayer.isPlaying()) {
+                    pause.setImageResource(R.drawable.ic_pause_black_24dp);
+                }
+                else{
+                    pause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+                }
             }
         };
 
@@ -106,9 +114,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(String s) {
 //                scrollView.setVisibility(View.INVISIBLE);
-//                if (task[0]!=null) task[0].cancel(true);
-//                if(s.equals(""))recent();
-//                else doMySearch(s);
+                if (task[0]!=null) task[0].cancel(true);
+                if(s.equals(""))recent();
+                else doMySearch(s);
                 return false;
             }
 
@@ -117,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
 //                scrollView.setVisibility(View.INVISIBLE);
                 if (task[0]!=null) task[0].cancel(true);
                 if(s.equals(""))recent();
-                else doMySearch(s);
+//                else doMySearch(s);
 //                task[0] = new AsyncTask() {
 //                    @Override
 //                    protected Object doInBackground(Object[] objects) {
@@ -134,17 +142,23 @@ public class MainActivity extends AppCompatActivity {
         });
 
         BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottombar);
+        BottomNavigationViewHelper.disableShiftMode(bottomNavigationView);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                if (item.getItemId() == R.id.home) {
+                    return true;
+                }
                 if (item.getItemId() == R.id.settings) {
                     Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
                     startActivity(intent);
+                    finish();
                     return true;
                 }
                 if (item.getItemId() == R.id.profile) {
                     Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
                     startActivity(intent);
+                    finish();
                     return true;
                 }
                 return false;
@@ -185,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout playerBar = (LinearLayout) findViewById(R.id.playerBar);
         if(as.state==StringsValues.PLAY) playerBar.setVisibility(View.VISIBLE);
         else playerBar.setVisibility(View.INVISIBLE);
-        final ImageButton pause=(ImageButton) findViewById(R.id.pause);
+        pause=(ImageButton) findViewById(R.id.pause);
         if(mediaPlayer.isPlaying()) {
             pause.setImageResource(R.drawable.ic_pause_black_24dp);
         }

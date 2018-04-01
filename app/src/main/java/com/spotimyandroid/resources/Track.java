@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 /**
  * Created by Jacopo on 11/03/2018.
@@ -59,11 +60,15 @@ public class Track implements Parcelable {
             if(o.has("album")) {
                 this.album = o.getJSONObject("album").getString("name");
                 this.albumid = o.getJSONObject("album").getString("id");
+                album=album.split(Pattern.quote("("))[0];
+                album=album.split("-")[0];
             }
         } catch (JSONException e) {
             this.album="album";
         }
         this.artistImage="";
+        name=name.split(Pattern.quote("("))[0];
+        name=name.split("-")[0];
 
     }
 

@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 
 import com.spotimyandroid.http.Api;
 import com.spotimyandroid.resources.Album;
@@ -21,6 +22,8 @@ import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 
 import static com.spotimyandroid.utils.StringsValues.BROADCAST_NEXT;
@@ -33,7 +36,7 @@ import static com.spotimyandroid.utils.StringsValues.BROADCAST_PLAY;
 
 public class ApplicationSupport extends Application  implements MediaPlayer.OnCompletionListener,
         MediaPlayer.OnBufferingUpdateListener{
-    private MediaPlayer mp = new MediaPlayer();
+    private MediaPlayer mp;
     private ArrayList<Track> queue = new ArrayList<>();
     private int pointer=0;
     public String state;
@@ -45,9 +48,14 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
 
 
     public void prepare(){
+        server=new Api(getApplicationContext());
+        mp = new MediaPlayer();
         mp.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
+                System.out.println(i);
+                System.out.println(i1);
+                System.out.println("errore del media player");
                 return false;
             }
         });
@@ -65,6 +73,7 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         }
 
         mp.setOnCompletionListener(this);
+        mp.reset();
 
     }
 
@@ -83,7 +92,8 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     }
 
     public Track getCurrentTrack(){
-        return queue.size()<=pointer? new Track() : queue.get(pointer);
+        if(pointer<0 || pointer>=queue.size()) return null;
+        return  queue.get(pointer);
     }
 
 
@@ -142,14 +152,63 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     }
 
     public void play() {
+        System.out.println("play");
         addTrack();
 
         if (mp.isPlaying()) mp.stop();
         mp.reset();
-        try {
+//        try {
             state=StringsValues.DOWNLOADING;
-            mp.setDataSource(Api.getTrackURL(getCurrentTrack().getArtist(),getCurrentTrack().getAlbum(), getCurrentTrack().getName()));
-            System.out.println("setDatasource");
+            Map<String, String> headers = new HashMap<>();
+//            headers.put("Content-Type", "audio/mp3"); // change content type if necessary
+            headers.put("Accept-Ranges", "bytes");
+            headers.put("Status", "206");
+            headers.put("Cache-control", "no-cache");
+//            server.getTrackURL2(getCurrentTrack().getArtist(), getCurrentTrack().getAlbum(), getCurrentTrack().getName(), new Api.VolleyCallback() {
+//                @Override
+//                public void onSuccess(JSONObject result) {
+//                    String filepath=result.toString();
+//                    System.out.println("file path"+filepath);
+//                    server.torrent(filepath, new Api.VolleyCallback(){
+//
+//
+//                        @Override
+//                        public void onSuccess(JSONObject result) {
+//                            try {
+//                                System.out.println(result.toString());
+//                                mp.setDataSource(result.toString());
+//                            } catch (IOException e) {
+//                                e.printStackTrace();
+//                            }
+//                            System.out.println("setDatasource");
+//                            mp.prepareAsync();
+//                            //mp3 will be started after completion of preparing...
+//                            mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+//
+//                                @Override
+//                                public void onPrepared(MediaPlayer player) {
+//                                    System.out.println("preparate");
+//                                    player.start();
+//                                    state=StringsValues.PLAY;
+//                                    Intent i = new Intent(BROADCAST_PLAY);
+//                                    i.putExtra("next_track", true);
+//                                    sendBroadcast(i);
+//                                }
+//
+//                            });
+//                        }
+//                    });
+//                }
+//            });
+            String url = Api.getTrackURL(getCurrentTrack().getArtist(),getCurrentTrack().getAlbum(), getCurrentTrack().getName());
+            Uri uri = Uri.parse(url);
+//            mp.setDataSource(getApplicationContext() , uri, headers);
+        try {
+            mp.setDataSource(url);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("setDatasource");
             mp.prepareAsync();
             //mp3 will be started after completion of preparing...
             mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -165,11 +224,17 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
                 }
 
             });
+//            System.out.println("preparate");
+//            mp.start();
+//            state=StringsValues.PLAY;
+//            Intent i = new Intent(BROADCAST_PLAY);
+//            i.putExtra("next_track", true);
+//            sendBroadcast(i);
 
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
 
 
