@@ -10,21 +10,20 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 
 import com.spotimyandroid.http.Api;
-import com.spotimyandroid.resources.Album;
-import com.spotimyandroid.resources.Artist;
-import com.spotimyandroid.resources.Track;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+
+import kaaes.spotify.webapi.android.models.Album;
+import kaaes.spotify.webapi.android.models.Artist;
+import kaaes.spotify.webapi.android.models.Track;
 
 import static com.spotimyandroid.utils.StringsValues.BROADCAST_NEXT;
 import static com.spotimyandroid.utils.StringsValues.BROADCAST_PLAY;
@@ -36,19 +35,19 @@ import static com.spotimyandroid.utils.StringsValues.BROADCAST_PLAY;
 
 public class ApplicationSupport extends Application  implements MediaPlayer.OnCompletionListener,
         MediaPlayer.OnBufferingUpdateListener{
+
     private MediaPlayer mp;
-    private ArrayList<Track> queue = new ArrayList<>();
     private int pointer=0;
     public String state;
 
+    private ArrayList<Track> queue = new ArrayList<>();
     private ArrayList<Track> recentTracks = new ArrayList<>(5);
     private ArrayList<Album> recentAlbums= new ArrayList<>(5);;
     private ArrayList<Artist> recentArtists= new ArrayList<>(5);;
-    private Api server;
+    private String token;
 
 
     public void prepare(){
-        server=new Api(getApplicationContext());
         mp = new MediaPlayer();
         mp.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
@@ -77,32 +76,6 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
 
     }
 
-    public MediaPlayer getMP() {
-        return mp;
-    }
-
-    public void setMP(MediaPlayer mp) {
-        this.mp = mp;
-    }
-
-
-
-    public int getLenghtQueue(){
-        return queue.size();
-    }
-
-    public Track getCurrentTrack(){
-        if(pointer<0 || pointer>=queue.size()) return null;
-        return  queue.get(pointer);
-    }
-
-
-    public Track getNextTrack(){
-        return (++pointer < queue.size()) ? queue.get(pointer) : null;
-    }
-
-
-
     @Override
     public void onBufferingUpdate(MediaPlayer mediaPlayer, int i) {
 
@@ -116,14 +89,12 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         mp.reset();
         if ( (++pointer < queue.size())) {
             state=StringsValues.DOWNLOADING;
-            Track t = queue.get(pointer);
-            String query = t.getName() + " - " + t.getArtist();
-            query = query.replace(" ", "%20");
+            Track track = queue.get(pointer);
             try {
                 Intent i = new Intent(BROADCAST_NEXT);
                 i.putExtra("next_track", true);
                 sendBroadcast(i);
-                mediaPlayer.setDataSource(Api.getTrackURL(getCurrentTrack().getArtist(),getCurrentTrack().getAlbum(), getCurrentTrack().getName()));
+                mediaPlayer.setDataSource("");
                 mp.prepare();
                 mp.start();
                 state=StringsValues.PLAY;
@@ -135,6 +106,20 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
                 e.printStackTrace();
             }
         }
+    }
+
+    public MediaPlayer getMP() {
+        return mp;
+    }
+
+
+    public int getLenghtQueue(){
+        return queue.size();
+    }
+
+    public Track getCurrentTrack(){
+        if(pointer<0 || pointer>=queue.size()) return null;
+        return  queue.get(pointer);
     }
 
     public void newQueue(Track[] tracks) {
@@ -154,76 +139,41 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     public void play() {
         System.out.println("play");
         addTrack();
-
-        if (mp.isPlaying()) mp.stop();
-        mp.reset();
+//
+//        if (mp.isPlaying()) mp.stop();
+//        mp.reset();
+////        try {
+//            state=StringsValues.DOWNLOADING;
+//            Map<String, String> headers = new HashMap<>();
+////            headers.put("Content-Type", "audio/mp3"); // change content type if necessary
+//            headers.put("Accept-Ranges", "bytes");
+//            headers.put("Status", "206");
+//            headers.put("Cache-control", "no-cache");
+//
+//            String url = Api.getTrackURL(getCurrentTrack().getArtist(),getCurrentTrack().getAlbum(), getCurrentTrack().getName());
+//            Uri uri = Uri.parse(url);
+////            mp.setDataSource(getApplicationContext() , uri, headers);
 //        try {
-            state=StringsValues.DOWNLOADING;
-            Map<String, String> headers = new HashMap<>();
-//            headers.put("Content-Type", "audio/mp3"); // change content type if necessary
-            headers.put("Accept-Ranges", "bytes");
-            headers.put("Status", "206");
-            headers.put("Cache-control", "no-cache");
-//            server.getTrackURL2(getCurrentTrack().getArtist(), getCurrentTrack().getAlbum(), getCurrentTrack().getName(), new Api.VolleyCallback() {
+//            mp.setDataSource(url);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        System.out.println("setDatasource");
+//            mp.prepareAsync();
+//            //mp3 will be started after completion of preparing...
+//            mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+//
 //                @Override
-//                public void onSuccess(JSONObject result) {
-//                    String filepath=result.toString();
-//                    System.out.println("file path"+filepath);
-//                    server.torrent(filepath, new Api.VolleyCallback(){
-//
-//
-//                        @Override
-//                        public void onSuccess(JSONObject result) {
-//                            try {
-//                                System.out.println(result.toString());
-//                                mp.setDataSource(result.toString());
-//                            } catch (IOException e) {
-//                                e.printStackTrace();
-//                            }
-//                            System.out.println("setDatasource");
-//                            mp.prepareAsync();
-//                            //mp3 will be started after completion of preparing...
-//                            mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-//
-//                                @Override
-//                                public void onPrepared(MediaPlayer player) {
-//                                    System.out.println("preparate");
-//                                    player.start();
-//                                    state=StringsValues.PLAY;
-//                                    Intent i = new Intent(BROADCAST_PLAY);
-//                                    i.putExtra("next_track", true);
-//                                    sendBroadcast(i);
-//                                }
-//
-//                            });
-//                        }
-//                    });
+//                public void onPrepared(MediaPlayer player) {
+//                    System.out.println("preparate");
+//                    player.start();
+//                    state=StringsValues.PLAY;
+//                    Intent i = new Intent(BROADCAST_PLAY);
+//                    i.putExtra("next_track", true);
+//                    sendBroadcast(i);
 //                }
+//
 //            });
-            String url = Api.getTrackURL(getCurrentTrack().getArtist(),getCurrentTrack().getAlbum(), getCurrentTrack().getName());
-            Uri uri = Uri.parse(url);
-//            mp.setDataSource(getApplicationContext() , uri, headers);
-        try {
-            mp.setDataSource(url);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println("setDatasource");
-            mp.prepareAsync();
-            //mp3 will be started after completion of preparing...
-            mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-
-                @Override
-                public void onPrepared(MediaPlayer player) {
-                    System.out.println("preparate");
-                    player.start();
-                    state=StringsValues.PLAY;
-                    Intent i = new Intent(BROADCAST_PLAY);
-                    i.putExtra("next_track", true);
-                    sendBroadcast(i);
-                }
-
-            });
 //            System.out.println("preparate");
 //            mp.start();
 //            state=StringsValues.PLAY;
@@ -265,62 +215,62 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         if(recentTracks.contains(getCurrentTrack())){
           return;
         }
-        server = new Api(getApplicationContext());
-        server.findArtist(getCurrentTrack().getArtist(), new Api.VolleyCallback() {
-            @Override
-            public void onSuccess(JSONObject result) {
-                getCurrentTrack().addArtistImage(result);
-                System.out.println("attualmente ci sono "+recentTracks.size()+ " tracce recenti");
-                if(recentTracks.size()==5){
-                    recentTracks.remove(0);
-                    recentTracks.add(getCurrentTrack());
-                }
-                else recentTracks.add(getCurrentTrack());
-                String str="";
-                for(int i= recentTracks.size()-1; i>=0 ; i--) {
-                    Track t=recentTracks.get(i);
-                    if(i==recentTracks.size()-1) str= str.concat(t.toString());
-                    else str=str.concat(",,,"+t.toString());
-                }
-                System.out.println("salvo la stringa "+str);
-                SharedPreferences.Editor prefEditor = getSharedPreferences("recent", Context.MODE_PRIVATE).edit();
-                prefEditor.putString("tracks", str);
-                prefEditor.commit();
-                addAlbum(new Album(getCurrentTrack().getAlbumid(), getCurrentTrack().getAlbum(),
-                            getCurrentTrack().getArtist(), getCurrentTrack().getCover()));
-            }
-        });
+//        server = new Api(getApplicationContext());
+//        server.findArtist(getCurrentTrack().getArtist(), new Api.VolleyCallback() {
+//            @Override
+//            public void onSuccess(JSONObject result) {
+//                getCurrentTrack().addArtistImage(result);
+//                System.out.println("attualmente ci sono "+recentTracks.size()+ " tracce recenti");
+//                if(recentTracks.size()==5){
+//                    recentTracks.remove(0);
+//                    recentTracks.add(getCurrentTrack());
+//                }
+//                else recentTracks.add(getCurrentTrack());
+//                String str="";
+//                for(int i= recentTracks.size()-1; i>=0 ; i--) {
+//                    Track t=recentTracks.get(i);
+//                    if(i==recentTracks.size()-1) str= str.concat(t.toString());
+//                    else str=str.concat(",,,"+t.toString());
+//                }
+//                System.out.println("salvo la stringa "+str);
+//                SharedPreferences.Editor prefEditor = getSharedPreferences("recent", Context.MODE_PRIVATE).edit();
+//                prefEditor.putString("tracks", str);
+//                prefEditor.commit();
+//                addAlbum(new Album(getCurrentTrack().getAlbumid(), getCurrentTrack().getAlbum(),
+//                            getCurrentTrack().getArtist(), getCurrentTrack().getCover()));
+//            }
+//        });
 
 
     }
 
     public void addAlbum(final Album info) {
         if(recentAlbums.contains(info)) return;
-        server = new Api(getApplicationContext());
-        server.findArtist(info.getArtist(), new Api.VolleyCallback() {
-            @Override
-            public void onSuccess(JSONObject result) {
-                Artist artist = Artist.toArray(result)[0];
-                System.out.println(artist);
-                if (recentAlbums.size() == 5) {
-                    recentAlbums.set(0, recentAlbums.get(1));
-                    recentAlbums.set(1, recentAlbums.get(2));
-                    recentAlbums.set(2, recentAlbums.get(3));
-                    recentAlbums.set(3, recentAlbums.get(4));
-                    recentAlbums.add(info);
-                } else recentAlbums.add(info);
-                String str = "";
-                for (int i = recentAlbums.size() - 1; i >= 0; i--) {
-                    Album t = recentAlbums.get(i);
-                    if (i == recentAlbums.size() - 1) str = str.concat(t.toString());
-                    else str = str.concat(",,," + t.toString());
-                }
-                SharedPreferences.Editor prefEditor = getSharedPreferences("recent", Context.MODE_PRIVATE).edit();
-                prefEditor.putString("albums", str);
-                prefEditor.commit();
-                addArtist(artist);
-            }
-        });
+//        server = new Api(getApplicationContext());
+//        server.findArtist(info.getArtist(), new Api.VolleyCallback() {
+//            @Override
+//            public void onSuccess(JSONObject result) {
+//                Artist artist = Artist.toArray(result)[0];
+//                System.out.println(artist);
+//                if (recentAlbums.size() == 5) {
+//                    recentAlbums.set(0, recentAlbums.get(1));
+//                    recentAlbums.set(1, recentAlbums.get(2));
+//                    recentAlbums.set(2, recentAlbums.get(3));
+//                    recentAlbums.set(3, recentAlbums.get(4));
+//                    recentAlbums.add(info);
+//                } else recentAlbums.add(info);
+//                String str = "";
+//                for (int i = recentAlbums.size() - 1; i >= 0; i--) {
+//                    Album t = recentAlbums.get(i);
+//                    if (i == recentAlbums.size() - 1) str = str.concat(t.toString());
+//                    else str = str.concat(",,," + t.toString());
+//                }
+//                SharedPreferences.Editor prefEditor = getSharedPreferences("recent", Context.MODE_PRIVATE).edit();
+//                prefEditor.putString("albums", str);
+//                prefEditor.commit();
+//                addArtist(artist);
+//            }
+//        });
     }
 
     public void addArtist(Artist info) {
@@ -369,6 +319,15 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
                 recentArtists.add(artist);
             }
         }
+    }
+
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getToken() {
+        return token;
     }
 
 

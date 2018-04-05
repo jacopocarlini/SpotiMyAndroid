@@ -19,17 +19,13 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.spotimyandroid.http.Api;
-import com.spotimyandroid.resources.Track;
 import com.spotimyandroid.utils.ApplicationSupport;
 import com.spotimyandroid.utils.StringsValues;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import kaaes.spotify.webapi.android.models.Track;
 
 /**
  * Created by Jacopo on 11/03/2018.
@@ -194,25 +190,25 @@ public class PlayerActivity extends AppCompatActivity{
         lyric = (TextView) findViewById(R.id.lyric);
         lyric.setMovementMethod(new ScrollingMovementMethod());
 
-        track.setText(trackInfo.getName());
-        album.setText(trackInfo.getAlbum());
-        artist.setText(trackInfo.getArtist());
-        server.lyric(trackInfo.getArtist(), trackInfo.getName(), new Api.VolleyCallback() {
-            @Override
-            public void onSuccess(JSONObject result) {
-                try {
-                    lyric.setText(parseLyric(result.getString("lyric")));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        cover=(ImageView) findViewById(R.id.cover);
-        if (trackInfo.hasCover()){
-            Glide.with(this).load(trackInfo.getCover()).into(cover);
-
-        }
+//        track.setText(trackInfo.getName());
+//        album.setText(trackInfo.getAlbum());
+//        artist.setText(trackInfo.getArtist());
+//        server.lyric(trackInfo.getArtist(), trackInfo.getName(), new Api.VolleyCallback() {
+//            @Override
+//            public void onSuccess(JSONObject result) {
+//                try {
+//                    lyric.setText(parseLyric(result.getString("lyric")));
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+//
+//        cover=(ImageView) findViewById(R.id.cover);
+//        if (trackInfo.hasCover()){
+//            Glide.with(this).load(trackInfo.getCover()).into(cover);
+//
+//        }
 
 
 

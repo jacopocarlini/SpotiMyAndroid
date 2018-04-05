@@ -15,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -24,34 +25,46 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.spotimyandroid.http.Api;
-import com.spotimyandroid.resources.Album;
-import com.spotimyandroid.resources.Artist;
-import com.spotimyandroid.resources.Track;
 import com.spotimyandroid.utils.ApplicationSupport;
 import com.spotimyandroid.utils.BottomNavigationViewHelper;
 import com.spotimyandroid.utils.StringsValues;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import de.hdodenhof.circleimageview.CircleImageView;
+import kaaes.spotify.webapi.android.SpotifyApi;
+import kaaes.spotify.webapi.android.SpotifyCallback;
+import kaaes.spotify.webapi.android.SpotifyError;
+import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Album;
+import kaaes.spotify.webapi.android.models.AlbumSimple;
+import kaaes.spotify.webapi.android.models.AlbumsPager;
+import kaaes.spotify.webapi.android.models.Artist;
+import kaaes.spotify.webapi.android.models.ArtistsPager;
+import kaaes.spotify.webapi.android.models.Pager;
+import kaaes.spotify.webapi.android.models.Track;
+import kaaes.spotify.webapi.android.models.TracksPager;
+import retrofit.client.Response;
 
 
 public class MainActivity extends AppCompatActivity {
 
     private SearchView searchView;
 
-    private Api server;
     private ScrollView scrollView;
     private LinearLayout tracksView;
     private LinearLayout albumsView;
     private LinearLayout artistsView;
-    private ApplicationSupport as;
+    private ApplicationSupport app;
     private MediaPlayer mediaPlayer;
     private ImageView player;
     private BroadcastReceiver mReceiver;
     private ImageButton pause;
+
+    private SpotifyService spotify;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,17 +73,13 @@ public class MainActivity extends AppCompatActivity {
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
+        app = (ApplicationSupport) this.getApplication();
 
+        SpotifyApi api = new SpotifyApi();
+        api.setAccessToken(app.getToken());
+        spotify = api.getService();
 
-        server = new Api(this);
-
-
-        if (as==null){
-            as = (ApplicationSupport) this.getApplication();
-            as.prepare();
-        }
-
-        mediaPlayer = as.getMP();
+        mediaPlayer = app.getMP();
         initview();
 
         mReceiver = new BroadcastReceiver() {
@@ -87,8 +96,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
-
     }
+
+
 
     @Override
     protected void onResume() {
@@ -102,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
         unregisterReceiver(mReceiver);
         super.onDestroy();
     }
+
     private void initview() {
         this.scrollView=(ScrollView) findViewById(R.id.results);
         this.searchView=(SearchView) findViewById(R.id.search);
@@ -113,8 +124,6 @@ public class MainActivity extends AppCompatActivity {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
-//                scrollView.setVisibility(View.INVISIBLE);
-//                if (task[0]!=null) task[0].cancel(true);
                 if(s.equals(""))recent();
                 else doMySearch(s);
                 return false;
@@ -122,19 +131,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(final String s) {
-//                scrollView.setVisibility(View.INVISIBLE);
-//                if (task[0]!=null) task[0].cancel(true);
                 if(s.equals(""))recent();
                 else doMySearch(s);
-//                task[0] = new AsyncTask() {
-//                    @Override
-//                    protected Object doInBackground(Object[] objects) {
-//                        if(s.equals(""))recent();
-//                        else doMySearch(s);
-//                        return null;
-//                    }
-//                };
-//                task[0].execute();
 
 
                 return false;
@@ -181,23 +179,23 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences sharedPref = getSharedPreferences( "recent", Context.MODE_PRIVATE );
         String s = sharedPref.getString("tracks", "");
-        as.addRecentTracks(Track.toArray(s));
-        addElemToTracksView(Track.toArray(s));
-
-        String a = sharedPref.getString("albums", "");
-        as.addRecentAlbums(Album.toArray(a));
-        addElemToAlbumsView(Album.toArray(a));
-
-        String ar = sharedPref.getString("artists", "");
-        as.addRecentArtists(Artist.toArray(ar));
-        addElemToArtistsView(Artist.toArray(ar));
+//        app.addRecentTracks(Track.toArray(s));
+//        addElemToTracksView(Track.toArray(s));
+//
+//        String a = sharedPref.getString("albums", "");
+//        app.addRecentAlbums(Album.toArray(a));
+//        addElemToAlbumsView(Album.toArray(a));
+//
+//        String ar = sharedPref.getString("artists", "");
+//        app.addRecentArtists(Artist.toArray(ar));
+//        addElemToArtistsView(Artist.toArray(ar));
 
     }
 
 
     public void player(){
         LinearLayout playerBar = (LinearLayout) findViewById(R.id.playerBar);
-        if(as.state==StringsValues.PLAY) playerBar.setVisibility(View.VISIBLE);
+        if(app.state==StringsValues.PLAY) playerBar.setVisibility(View.VISIBLE);
         else playerBar.setVisibility(View.INVISIBLE);
         pause=(ImageButton) findViewById(R.id.pause);
         if(mediaPlayer.isPlaying()) {
@@ -213,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
                     pause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
                     mediaPlayer.pause();
                 }
-                else if(as.getLenghtQueue()>0){
+                else if(app.getLenghtQueue()>0){
                     pause.setImageResource(R.drawable.ic_pause_black_24dp);
                     mediaPlayer.start();
                 }
@@ -225,13 +223,13 @@ public class MainActivity extends AppCompatActivity {
         next.setOnClickListener(new View.OnClickListener() {
          @Override
          public void onClick(View view) {
-             as.nextTrack();
+             app.nextTrack();
          }
         });
         previous.setOnClickListener(new View.OnClickListener() {
              @Override
              public void onClick(View view) {
-                 as.previousTrack();
+                 app.previousTrack();
              }
          });
 
@@ -256,81 +254,95 @@ public class MainActivity extends AppCompatActivity {
         textAlbums.setText(R.string.albums);
         textArtists.setText(R.string.artists);
 
-        server.findTrack(query.replace(" ","%20"), new Api.VolleyCallback() {
+
+        final Map<String, Object> options = new HashMap<>();
+        options.put(SpotifyService.LIMIT, 5);
+        spotify.searchTracks(query, options, new SpotifyCallback<TracksPager>() {
             @Override
-            public void onSuccess(JSONObject result) {
-            addElemToTracksView(Track.toArray(result));
-            server.findArtist(query, new Api.VolleyCallback() {
-                @Override
-                public void onSuccess(JSONObject result) {
-                    addElemToArtistsView(Artist.toArray(result));
-                    server.findAlbum(query, new Api.VolleyCallback() {
-                        @Override
-                        public void onSuccess(JSONObject result) {
-                                addElemToAlbumsView(Album.toArray(result));
-//                              scrollView.setVisibility(View.VISIBLE);
-                        }
-                    });
-                }
-            });
+            public void failure(SpotifyError spotifyError) {
+
+            }
+
+            @Override
+            public void success(TracksPager tracksPager, Response response) {
+                System.out.println(tracksPager.tracks.limit);
+                System.out.println(tracksPager.tracks.items.size());
+                System.out.println(tracksPager.tracks.items.get(3));
+                addElemToTracksView(tracksPager.tracks);
+                spotify.searchArtists(query, options, new SpotifyCallback<ArtistsPager>() {
+                    @Override
+                    public void failure(SpotifyError spotifyError) {
+                        
+                    }
+
+                    @Override
+                    public void success(ArtistsPager artistsPager, Response response) {
+                        addElemToArtistsView(artistsPager.artists);
+                        spotify.searchAlbums(query, options, new SpotifyCallback<AlbumsPager>() {
+                            @Override
+                            public void failure(SpotifyError spotifyError) {
+                                
+                            }
+
+                            @Override
+                            public void success(AlbumsPager albumsPager, Response response) {
+                                addElemToAlbumsView(albumsPager.albums);
+                            }
+                        });
+                    }
+                });
             }
         });
-
-
-
-
-
+        
     }
 
-    private void addElemToAlbumsView(final Album[] albums) {
-        albumsView.removeAllViews();
+
+    private void addElemToTracksView(final Pager<Track> tracks) {
+        tracksView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        for (int i =0 ;i<albums.length;i++){
-            View elem = inflater.inflate(R.layout.item_album, null);
+        for (int i =0 ;i<tracks.items.size();i++){
+            View elem = inflater.inflate(R.layout.item_track, null);
             TextView name = (TextView) elem.findViewById(R.id.name);
-            name.setText(albums[i].getName());
-            ImageView cover = (ImageView) elem.findViewById(R.id.cover);
-            if (albums[i].hasCover()) {
-//                new DownloadImageTask(cover).execute(albums[i].getCover());
-//                setImage(albums[i].getCover(), cover);
-//                cover.setImageBitmap(loadBitmap(albums[i].getCover()));
-                Glide.with(this).load(albums[i].getCover()).into(cover);
-            }
+            name.setText(tracks.items.get(i).name);
+            TextView artist = (TextView) elem.findViewById(R.id.artist);
+            artist.setText(tracks.items.get(i).artists.get(0).name);
+            TextView album = (TextView) elem.findViewById(R.id.album);
+            album.setText(tracks.items.get(i).album.name);
             final int finalI = i;
             elem.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Intent intent = new Intent(getApplicationContext(), AlbumActivity.class);
-                    intent.putExtra("album", albums[finalI]);
+                    Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
+                    if(!tracks.items.get(finalI).equals(app.getCurrentTrack())) {
+                        app.newQueue(tracks.items.toArray(new Track[tracks.items.size()]));
+                    }
+                    app.setPosition(finalI);
+                    intent.putExtra("info","play");
                     startActivity(intent);
                 }
             });
-            albumsView.addView(elem);
+            tracksView.addView(elem);
         }
     }
 
-    private void addElemToArtistsView(final Artist[] artists) {
-//        scrollView.setVisibility(View.VISIBLE);
+    private void addElemToArtistsView(final Pager<Artist> artists) {
         artistsView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        for (int i =0 ;i<artists.length;i++){
+        for (int i =0; i<artists.items.size(); i++){
             View elem = inflater.inflate(R.layout.item_artist, null);
             TextView name = (TextView) elem.findViewById(R.id.artist);
-            name.setText(artists[i].getName());
+            name.setText(artists.items.get(i).name);
             CircleImageView image = (CircleImageView) elem.findViewById(R.id.image);
-            if (artists[i].hasImage()) {
-//                new DownloadImageTask(image).execute(artists[i].getImage());
-//                image.setImageBitmap(loadBitmap(artists[i].getImage()));
-                Glide.with(this).load(artists[i].getImage()).into(image);
+            if (!artists.items.get(i).images.isEmpty()) {
+                Glide.with(this).load(artists.items.get(i).images.get(0).url).into(image);
             }
-
             final int finalI = i;
             elem.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), ArtistActivity.class);
                     TextView name = (TextView) view.findViewById(R.id.artist);
-                    intent.putExtra("artist", artists[finalI]);
+                    intent.putExtra("artist", artists.items.get(finalI));
                     startActivity(intent);
                 }
             });
@@ -338,36 +350,28 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void addElemToTracksView(final Track[] tracks){
-//        scrollView.setVisibility(View.VISIBLE);
-        tracksView.removeAllViews();
+    private void addElemToAlbumsView(final Pager<AlbumSimple> albums) {
+        albumsView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        System.out.println("trovate tracks " + tracks.length);
-        for (int i =0 ;i<tracks.length;i++){
-            View elem = inflater.inflate(R.layout.item_track, null);
+        for (int i =0; i<albums.items.size(); i++){
+            View elem = inflater.inflate(R.layout.item_album, null);
             TextView name = (TextView) elem.findViewById(R.id.name);
-            name.setText(tracks[i].getName());
-            TextView artist = (TextView) elem.findViewById(R.id.artist);
-            artist.setText(tracks[i].getArtist());
-            TextView album = (TextView) elem.findViewById(R.id.album);
-            album.setText(tracks[i].getAlbum());
+            name.setText(albums.items.get(i).name);
+            ImageView cover = (ImageView) elem.findViewById(R.id.cover);
+            if (!albums.items.get(i).images.isEmpty()) {
+                Glide.with(this).load(albums.items.get(i).images.get(0).url).into(cover);
+            }
             final int finalI = i;
             elem.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
-                    Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
-                    if(!as.getQueue().toArray().equals(tracks)) {
-                        as.newQueue(tracks);
-                    }
-                    as.setPosition(finalI);
-                    intent.putExtra("info","play");
+                    Intent intent = new Intent(getApplicationContext(), AlbumActivity.class);
+                    intent.putExtra("album", albums.items.get(finalI));
                     startActivity(intent);
                 }
             });
-            tracksView.addView(elem);
+            albumsView.addView(elem);
         }
-
     }
 
 

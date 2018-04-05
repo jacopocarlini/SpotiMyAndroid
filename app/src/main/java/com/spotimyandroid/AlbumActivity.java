@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -14,22 +13,20 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.spotimyandroid.http.Api;
-import com.spotimyandroid.resources.Album;
-import com.spotimyandroid.resources.Track;
 import com.spotimyandroid.utils.ApplicationSupport;
 import com.spotimyandroid.utils.BottomNavigationViewHelper;
 import com.spotimyandroid.utils.StringsValues;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
+
+import kaaes.spotify.webapi.android.models.Album;
+import kaaes.spotify.webapi.android.models.Track;
 
 /**
  * Created by Jacopo on 13/03/2018.
@@ -59,14 +56,14 @@ public class AlbumActivity extends AppCompatActivity{
         albumInfo = intent.getParcelableExtra("album");
         mediaPlayer = as.getMP();
         server = new Api(this);
-        server.findTracksOfAlbum(albumInfo.getId(), new Api.VolleyCallback() {
-            @Override
-            public void onSuccess(JSONObject result) {
-            tracks = Track.toArray(result);
-            initview();
-
-            }
-        });
+//        server.findTracksOfAlbum(albumInfo.getId(), new Api.VolleyCallback() {
+//            @Override
+//            public void onSuccess(JSONObject result) {
+//            tracks = Track.toArray(result);
+//            initview();
+//
+//            }
+//        });
 
         as.addAlbum(albumInfo);
 
@@ -102,44 +99,44 @@ public class AlbumActivity extends AppCompatActivity{
 
     private void initview() {
         albumView = (TextView) findViewById(R.id.album);
-        albumView.setText(albumInfo.getName());
-        artistView = (TextView) findViewById(R.id.artist);
-        artistView.setText(albumInfo.getArtist());
-        tracksView = (LinearLayout) findViewById(R.id.tracks);
-        tracksView.removeAllViews();
-        LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//        as.resetQueue();
-        for (int i=0; i<tracks.length;i++){
-            tracks[i].setCover(albumInfo.getCover());
-            tracks[i].setAlbum(albumInfo.getName());
-            View elem = inflater.inflate(R.layout.item_album_track, null);
-            final TextView track = (TextView) elem.findViewById(R.id.track);
-            track.setText(tracks[i].getName());
-            TextView position = (TextView) elem.findViewById(R.id.position);
-            position.setText(Integer.toString(i+1));
-
-            final int finalI = i;
-//            as.addTrackToQueue(tracks[i]);
-            elem.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
-//                    intent.putExtra("track", tracks[finalI]);
-                    as.newQueue(tracks);
-                    as.setPosition(finalI);
-//                    as.play();
-                    intent.putExtra("info","play");
-                    startActivity(intent);
-                }
-            });
-            tracksView.addView(elem);
-
-        }
-
-        cover = (ImageView) findViewById(R.id.cover);
-        if (albumInfo.hasCover())
-//            new DownloadImageTask(cover).execute(albumInfo.getCover());
-            Glide.with(this).load(albumInfo.getCover()).into(cover);
+//        albumView.setText(albumInfo.getName());
+//        artistView = (TextView) findViewById(R.id.artist);
+//        artistView.setText(albumInfo.getArtist());
+//        tracksView = (LinearLayout) findViewById(R.id.tracks);
+//        tracksView.removeAllViews();
+//        LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+////        as.resetQueue();
+//        for (int i=0; i<tracks.length;i++){
+//            tracks[i].setCover(albumInfo.getCover());
+//            tracks[i].setAlbum(albumInfo.getName());
+//            View elem = inflater.inflate(R.layout.item_album_track, null);
+//            final TextView track = (TextView) elem.findViewById(R.id.track);
+//            track.setText(tracks[i].getName());
+//            TextView position = (TextView) elem.findViewById(R.id.position);
+//            position.setText(Integer.toString(i+1));
+//
+//            final int finalI = i;
+////            as.addTrackToQueue(tracks[i]);
+//            elem.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
+////                    intent.putExtra("track", tracks[finalI]);
+//                    as.newQueue(tracks);
+//                    as.setPosition(finalI);
+////                    as.play();
+//                    intent.putExtra("info","play");
+//                    startActivity(intent);
+//                }
+//            });
+//            tracksView.addView(elem);
+//
+//        }
+//
+//        cover = (ImageView) findViewById(R.id.cover);
+//        if (albumInfo.hasCover())
+////            new DownloadImageTask(cover).execute(albumInfo.getCover());
+//            Glide.with(this).load(albumInfo.getCover()).into(cover);
 
         BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottombar);
         BottomNavigationViewHelper.disableShiftMode(bottomNavigationView);

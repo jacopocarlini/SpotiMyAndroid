@@ -21,15 +21,15 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.spotimyandroid.http.Api;
-import com.spotimyandroid.resources.Album;
-import com.spotimyandroid.resources.Artist;
-import com.spotimyandroid.resources.Track;
 import com.spotimyandroid.utils.ApplicationSupport;
 import com.spotimyandroid.utils.BottomNavigationViewHelper;
 import com.spotimyandroid.utils.StringsValues;
 
-import org.json.JSONException;
 import org.json.JSONObject;
+
+import kaaes.spotify.webapi.android.models.Album;
+import kaaes.spotify.webapi.android.models.Artist;
+import kaaes.spotify.webapi.android.models.Track;
 
 /**
  * Created by Jacopo on 12/03/2018.
@@ -102,9 +102,9 @@ public class ArtistActivity extends AppCompatActivity {
         this.popular = (LinearLayout) findViewById(R.id.popular);
         this.albums = (GridLayout) findViewById(R.id.albums);
 
-        name.setText(artistInfo.getName());
-
-        Glide.with(this).load(artistInfo.getImage()).fitCenter().into(image);
+//        name.setText(artistInfo.getName());
+//
+//        Glide.with(this).load(artistInfo.getImage()).fitCenter().into(image);
 
         AsyncTask task = new AsyncTask() {
             @Override
@@ -142,71 +142,71 @@ public class ArtistActivity extends AppCompatActivity {
     }
 
     private void findTracks() {
-        server.findPopularOfArtist(artistInfo.getId(), new Api.VolleyCallback() {
-            @Override
-            public void onSuccess(JSONObject result) {
-
-                    tracksInfo= Track.toArray(result);
-                    LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//                    as.resetQueue();
-                    for (int i=0; i<5;i++){
-                        tracksInfo[i].setCover(tracksInfo[i].getCover());
-                        View elem = inflater.inflate(R.layout.item_album_track, null);
-                        final TextView track = (TextView) elem.findViewById(R.id.track);
-                        track.setText(tracksInfo[i].getName());
-                        TextView position = (TextView) elem.findViewById(R.id.position);
-                        position.setText(Integer.toString(i+1));
-//                        as.addTrackToQueue(tracksInfo[i]);
-                        final int finalI = i;
-                        elem.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
-//                                intent.putExtra("track", tracksInfo[finalI]);
-                                as.newQueue(tracksInfo);
-                                as.setPosition(finalI);
-                                intent.putExtra("info","play");
-                                startActivity(intent);
-                            }
-                        });
-                        popular.addView(elem);
-
-                    }
-
-            }
-        });
+//        server.findPopularOfArtist(artistInfo.getId(), new Api.VolleyCallback() {
+//            @Override
+//            public void onSuccess(JSONObject result) {
+//
+//                    tracksInfo= Track.toArray(result);
+//                    LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+////                    as.resetQueue();
+//                    for (int i=0; i<5;i++){
+//                        tracksInfo[i].setCover(tracksInfo[i].getCover());
+//                        View elem = inflater.inflate(R.layout.item_album_track, null);
+//                        final TextView track = (TextView) elem.findViewById(R.id.track);
+//                        track.setText(tracksInfo[i].getName());
+//                        TextView position = (TextView) elem.findViewById(R.id.position);
+//                        position.setText(Integer.toString(i+1));
+////                        as.addTrackToQueue(tracksInfo[i]);
+//                        final int finalI = i;
+//                        elem.setOnClickListener(new View.OnClickListener() {
+//                            @Override
+//                            public void onClick(View view) {
+//                                Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
+////                                intent.putExtra("track", tracksInfo[finalI]);
+//                                as.newQueue(tracksInfo);
+//                                as.setPosition(finalI);
+//                                intent.putExtra("info","play");
+//                                startActivity(intent);
+//                            }
+//                        });
+//                        popular.addView(elem);
+//
+//                    }
+//
+//            }
+//        });
     }
 
     private void findAlbums() {
-        server.findAlbumsOfArtist(artistInfo.getId(), new Api.VolleyCallback() {
-            @Override
-            public void onSuccess(JSONObject result) {
-                albumsInfo = Album.toArray(result);
-                LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                for (int i=0; i<albumsInfo.length;i++){
-                    View elem = inflater.inflate(R.layout.item_album, null);
-                    final TextView name = (TextView) elem.findViewById(R.id.name);
-                    name.setText(albumsInfo[i].getName());
-                    ImageView cover = (ImageView) elem.findViewById(R.id.cover);
-                    Glide.with(ArtistActivity.this).load(albumsInfo[i].getCover()).into(cover);
-                    final int finalI = i;
-                    elem.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            Intent intent = new Intent(getApplicationContext(), AlbumActivity.class);
-                            intent.putExtra("album", albumsInfo[finalI]);
-//                            System.out.println(albumsInfo[finalI]);
-                            startActivity(intent);
-                        }
-                    });
-                    albums.addView(elem);
-
-                }
-
-
-
-            }
-        });
+//        server.findAlbumsOfArtist(artistInfo.getId(), new Api.VolleyCallback() {
+//            @Override
+//            public void onSuccess(JSONObject result) {
+//                albumsInfo = Album.toArray(result);
+//                LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//                for (int i=0; i<albumsInfo.length;i++){
+//                    View elem = inflater.inflate(R.layout.item_album, null);
+//                    final TextView name = (TextView) elem.findViewById(R.id.name);
+//                    name.setText(albumsInfo[i].getName());
+//                    ImageView cover = (ImageView) elem.findViewById(R.id.cover);
+//                    Glide.with(ArtistActivity.this).load(albumsInfo[i].getCover()).into(cover);
+//                    final int finalI = i;
+//                    elem.setOnClickListener(new View.OnClickListener() {
+//                        @Override
+//                        public void onClick(View view) {
+//                            Intent intent = new Intent(getApplicationContext(), AlbumActivity.class);
+//                            intent.putExtra("album", albumsInfo[finalI]);
+////                            System.out.println(albumsInfo[finalI]);
+//                            startActivity(intent);
+//                        }
+//                    });
+//                    albums.addView(elem);
+//
+//                }
+//
+//
+//
+//            }
+//        });
     }
 
 
