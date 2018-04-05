@@ -30,47 +30,6 @@ public class SettingsActivity extends AppCompatActivity {
 
         //TODO: usare sharedPreference
 
-        try {
-            FileInputStream in = openFileInput("settings.txt");
-
-            InputStreamReader inputStreamReader = new InputStreamReader(in);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            StringBuilder sb = new StringBuilder();
-            String line;
-
-            while ((line = bufferedReader.readLine()) != null) {
-                sb.append(line);
-            }
-            System.out.println(sb);
-            System.out.println(sb.length());
-            if (sb.toString().equals("fast")){
-                System.out.println("true");
-                fast.setChecked(true);
-            }
-            else System.out.println("false");
-
-        } catch (IOException e) {
-            e.printStackTrace();
-
-        }
-
-
-        fast.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String fileContents="slow";
-                if (fast.isChecked()) fileContents="fast";
-
-                try {
-                    FileOutputStream outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-
-                    outputStream.write(fileContents.getBytes());
-                    outputStream.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
 
     }
 }

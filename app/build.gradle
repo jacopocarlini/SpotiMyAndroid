@@ -38,6 +38,5 @@ dependencies {
     implementation 'com.android.volley:volley:1.1.0'
     implementation 'de.hdodenhof:circleimageview:2.2.0'
     implementation 'com.github.bumptech.glide:glide:3.6.1'
-    implementation "com.github.TorrentStream:TorrentStream-Android:2.5.0"
 
 }

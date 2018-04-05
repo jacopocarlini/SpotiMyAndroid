@@ -86,7 +86,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                app:srcCompat="@android:drawable/stat_sys_download_done" />
+                android:tint="@color/white"
+                app:srcCompat="@drawable/ic_file_download_black_24dp" />
 
             <ImageView
                 android:id="@+id/queue"

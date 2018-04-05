@@ -18,12 +18,12 @@ import org.json.JSONObject;
 
 
 public class Api {
-    private static String SERVER_IP = "10.0.2.2"; //localhost
+//    private static String SERVER_IP = "10.0.2.2"; //localhost
 //    private static String SERVER_IP = "192.168.1.15"; //pc
 //    private static String SERVER_IP = "104.40.208.29"; //azure
-//    private static String SERVER_IP = "casacarlini.homepc.it"; //raspberyy
-    private static String SERVER_PORT = "3000";
-//    private static String SERVER_PORT = "3001";
+    private static String SERVER_IP = "casacarlini.homepc.it"; //raspberyy
+//    private static String SERVER_PORT = "3000";
+    private static String SERVER_PORT = "3001";
 
     public static final String TAG = "API";
     private static Context contextS;
@@ -125,6 +125,10 @@ public class Api {
 
     }
 
+    public void getTrackURL2(String artist, String album, String track, VolleyCallback callback) {
+        String url ="http://" + SERVER_IP + ":"+SERVER_PORT+"/play_torrent/" + sostituisci(artist)+"/" + sostituisci(album)+"/"+ sostituisci(track);
+        call(url, callback);
+    }
 
 
     public void play(String artist, String track, final VolleyCallback callback) {
@@ -147,6 +151,11 @@ public class Api {
 
     public void setOffset(int i) {
         this.offset=i;
+    }
+
+    public void torrent(String filepath, VolleyCallback callback) {
+        String url = "http://" + SERVER_IP + ":"+SERVER_PORT+"/torrent/" + sostituisci(filepath);
+        call(url, callback);
     }
 
 

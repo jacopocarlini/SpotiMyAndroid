@@ -1,23 +1,17 @@
 package com.spotimyandroid;
 
-import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,16 +23,12 @@ import android.widget.SearchView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.github.se_bastiaan.torrentstream.StreamStatus;
-import com.github.se_bastiaan.torrentstream.Torrent;
-import com.github.se_bastiaan.torrentstream.TorrentOptions;
-import com.github.se_bastiaan.torrentstream.TorrentStream;
-import com.github.se_bastiaan.torrentstream.listeners.TorrentListener;
 import com.spotimyandroid.http.Api;
 import com.spotimyandroid.resources.Album;
 import com.spotimyandroid.resources.Artist;
 import com.spotimyandroid.resources.Track;
 import com.spotimyandroid.utils.ApplicationSupport;
+import com.spotimyandroid.utils.BottomNavigationViewHelper;
 import com.spotimyandroid.utils.StringsValues;
 
 import org.json.JSONArray;
@@ -48,7 +38,7 @@ import org.json.JSONObject;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 
-public class MainActivity extends AppCompatActivity implements TorrentListener {
+public class MainActivity extends AppCompatActivity {
 
     private SearchView searchView;
 
@@ -61,9 +51,7 @@ public class MainActivity extends AppCompatActivity implements TorrentListener {
     private MediaPlayer mediaPlayer;
     private ImageView player;
     private BroadcastReceiver mReceiver;
-
-    private static final String TORRENT = "torrent";
-
+    private ImageButton pause;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,49 +62,39 @@ public class MainActivity extends AppCompatActivity implements TorrentListener {
         StrictMode.setThreadPolicy(policy);
 
 
-//        server = new Api(this);
-//
-//
-//        if (as==null){
-//            as = (ApplicationSupport) this.getApplication();
-//            as.prepare();
-//        }
-//
-//        mediaPlayer = as. getMP();
-//        initview();
-//
-//        mReceiver = new BroadcastReceiver() {
-//            @Override
-//            public void onReceive(Context context, Intent intent) {
-//                // Do what you need in here
-//                LinearLayout playerBar = (LinearLayout) findViewById(R.id.playerBar);
-//                playerBar.setVisibility(View.VISIBLE);
-//            }
-//        };
+        server = new Api(this);
 
 
-        TorrentOptions torrentOptions = new TorrentOptions.Builder()
-                .saveLocation(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS))
-                .removeFilesAfterStop(true)
-                .autoDownload(true)
-                .build();
+        if (as==null){
+            as = (ApplicationSupport) this.getApplication();
+            as.prepare();
+        }
 
-        TorrentStream torrentStream = TorrentStream.init(torrentOptions);
-        String streamUrl = "magnet:?xt=urn:btih:CFC3D6CBDC0E292C5701CE8BC9C5843F5CC29E45&dn=Caparezza+-+Museica+%282014%29%5BWav-Rap-Log%2BCue%5DTNT+Village&tr=http%3A%2F%2Ftracker.tntvillage.scambioetico.org%3A2710%2Fannounce&tr=udp%3A%2F%2Ftracker.tntvillage.scambioetico.org%3A2710%2Fannounce&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce&tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&tr=udp%3A%2F%2Ftracker.zer0day.to%3A1337%2Fannounce&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969%2Fannounce&tr=udp%3A%2F%2Fcoppersurfer.tk%3A6969%2Fannounce";
-        torrentStream.addListener(this);
-        torrentStream.startStream(streamUrl);
+        mediaPlayer = as.getMP();
+        initview();
 
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                // Do what you need in here
+                LinearLayout playerBar = (LinearLayout) findViewById(R.id.playerBar);
+                playerBar.setVisibility(View.VISIBLE);
+                if(mediaPlayer.isPlaying()) {
+                    pause.setImageResource(R.drawable.ic_pause_black_24dp);
+                }
+                else{
+                    pause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+                }
+            }
+        };
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
-        }
-//        player();
-//        registerReceiver(mReceiver, new IntentFilter(StringsValues.BROADCAST_PLAY));
+        player();
+        registerReceiver(mReceiver, new IntentFilter(StringsValues.BROADCAST_PLAY));
     }
 
     @Override
@@ -137,15 +115,15 @@ public class MainActivity extends AppCompatActivity implements TorrentListener {
             public boolean onQueryTextSubmit(String s) {
 //                scrollView.setVisibility(View.INVISIBLE);
 //                if (task[0]!=null) task[0].cancel(true);
-//                if(s.equals(""))recent();
-//                else doMySearch(s);
+                if(s.equals(""))recent();
+                else doMySearch(s);
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(final String s) {
 //                scrollView.setVisibility(View.INVISIBLE);
-                if (task[0]!=null) task[0].cancel(true);
+//                if (task[0]!=null) task[0].cancel(true);
                 if(s.equals(""))recent();
                 else doMySearch(s);
 //                task[0] = new AsyncTask() {
@@ -164,17 +142,23 @@ public class MainActivity extends AppCompatActivity implements TorrentListener {
         });
 
         BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottombar);
+        BottomNavigationViewHelper.disableShiftMode(bottomNavigationView);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                if (item.getItemId() == R.id.home) {
+                    return true;
+                }
                 if (item.getItemId() == R.id.settings) {
                     Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
                     startActivity(intent);
+
                     return true;
                 }
                 if (item.getItemId() == R.id.profile) {
                     Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
                     startActivity(intent);
+
                     return true;
                 }
                 return false;
@@ -215,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements TorrentListener {
         LinearLayout playerBar = (LinearLayout) findViewById(R.id.playerBar);
         if(as.state==StringsValues.PLAY) playerBar.setVisibility(View.VISIBLE);
         else playerBar.setVisibility(View.INVISIBLE);
-        final ImageButton pause=(ImageButton) findViewById(R.id.pause);
+        pause=(ImageButton) findViewById(R.id.pause);
         if(mediaPlayer.isPlaying()) {
             pause.setImageResource(R.drawable.ic_pause_black_24dp);
         }
@@ -387,52 +371,6 @@ public class MainActivity extends AppCompatActivity implements TorrentListener {
     }
 
 
-    @Override
-    public void onStreamPrepared(Torrent torrent) {
-        Log.d(TORRENT, "OnStreamPrepared");
-        System.out.println(torrent);
-        for (int i=0; i<torrent.getFileNames().length;i++){
-            System.out.println(torrent.getFileNames()[i]);
-
-        }
-        torrent.setSelectedFileIndex(5);
-        // If you set TorrentOptions#autoDownload(false) then this is probably the place to call
-         torrent.startDownload();
-    }
-
-    @Override
-    public void onStreamStarted(Torrent torrent) {
-        Log.d(TORRENT, "onStreamStarted");
-    }
-
-    @Override
-    public void onStreamError(Torrent torrent, Exception e) {
-        Log.e(TORRENT, "onStreamError", e);
-    }
-
-    @Override
-    public void onStreamReady(Torrent torrent) {
-        Log.d(TORRENT, "onStreamReady: " + torrent.getVideoFile());
-
-        System.out.println(torrent);
-        System.out.println(torrent.getFileNames());
-
-        System.out.println(torrent.getSaveLocation());
-
-    }
-
-    @Override
-    public void onStreamProgress(Torrent torrent, StreamStatus status) {
-        if(status.bufferProgress <= 100) {
-            Log.d(TORRENT, "Progress: " + status.bufferProgress);
-            System.out.println("Progress"+ status.bufferProgress);
-        }
-    }
-
-    @Override
-    public void onStreamStopped() {
-        Log.d(TORRENT, "onStreamStopped");
-    }
 
 
 }
