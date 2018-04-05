@@ -1,17 +1,23 @@
 package com.spotimyandroid;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,6 +29,11 @@ import android.widget.SearchView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.github.se_bastiaan.torrentstream.StreamStatus;
+import com.github.se_bastiaan.torrentstream.Torrent;
+import com.github.se_bastiaan.torrentstream.TorrentOptions;
+import com.github.se_bastiaan.torrentstream.TorrentStream;
+import com.github.se_bastiaan.torrentstream.listeners.TorrentListener;
 import com.spotimyandroid.http.Api;
 import com.spotimyandroid.resources.Album;
 import com.spotimyandroid.resources.Artist;
@@ -37,7 +48,7 @@ import org.json.JSONObject;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements TorrentListener {
 
     private SearchView searchView;
 
@@ -51,6 +62,9 @@ public class MainActivity extends AppCompatActivity {
     private ImageView player;
     private BroadcastReceiver mReceiver;
 
+    private static final String TORRENT = "torrent";
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,33 +74,49 @@ public class MainActivity extends AppCompatActivity {
         StrictMode.setThreadPolicy(policy);
 
 
-        server = new Api(this);
+//        server = new Api(this);
+//
+//
+//        if (as==null){
+//            as = (ApplicationSupport) this.getApplication();
+//            as.prepare();
+//        }
+//
+//        mediaPlayer = as. getMP();
+//        initview();
+//
+//        mReceiver = new BroadcastReceiver() {
+//            @Override
+//            public void onReceive(Context context, Intent intent) {
+//                // Do what you need in here
+//                LinearLayout playerBar = (LinearLayout) findViewById(R.id.playerBar);
+//                playerBar.setVisibility(View.VISIBLE);
+//            }
+//        };
 
 
-        if (as==null){
-            as = (ApplicationSupport) this.getApplication();
-            as.prepare();
-        }
+        TorrentOptions torrentOptions = new TorrentOptions.Builder()
+                .saveLocation(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS))
+                .removeFilesAfterStop(true)
+                .autoDownload(true)
+                .build();
 
-        mediaPlayer = as. getMP();
-        initview();
+        TorrentStream torrentStream = TorrentStream.init(torrentOptions);
+        String streamUrl = "magnet:?xt=urn:btih:CFC3D6CBDC0E292C5701CE8BC9C5843F5CC29E45&dn=Caparezza+-+Museica+%282014%29%5BWav-Rap-Log%2BCue%5DTNT+Village&tr=http%3A%2F%2Ftracker.tntvillage.scambioetico.org%3A2710%2Fannounce&tr=udp%3A%2F%2Ftracker.tntvillage.scambioetico.org%3A2710%2Fannounce&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce&tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&tr=udp%3A%2F%2Ftracker.zer0day.to%3A1337%2Fannounce&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969%2Fannounce&tr=udp%3A%2F%2Fcoppersurfer.tk%3A6969%2Fannounce";
+        torrentStream.addListener(this);
+        torrentStream.startStream(streamUrl);
 
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                // Do what you need in here
-                LinearLayout playerBar = (LinearLayout) findViewById(R.id.playerBar);
-                playerBar.setVisibility(View.VISIBLE);
-            }
-        };
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        player();
-        registerReceiver(mReceiver, new IntentFilter(StringsValues.BROADCAST_PLAY));
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
+        }
+//        player();
+//        registerReceiver(mReceiver, new IntentFilter(StringsValues.BROADCAST_PLAY));
     }
 
     @Override
@@ -357,6 +387,52 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public void onStreamPrepared(Torrent torrent) {
+        Log.d(TORRENT, "OnStreamPrepared");
+        System.out.println(torrent);
+        for (int i=0; i<torrent.getFileNames().length;i++){
+            System.out.println(torrent.getFileNames()[i]);
+
+        }
+        torrent.setSelectedFileIndex(5);
+        // If you set TorrentOptions#autoDownload(false) then this is probably the place to call
+         torrent.startDownload();
+    }
+
+    @Override
+    public void onStreamStarted(Torrent torrent) {
+        Log.d(TORRENT, "onStreamStarted");
+    }
+
+    @Override
+    public void onStreamError(Torrent torrent, Exception e) {
+        Log.e(TORRENT, "onStreamError", e);
+    }
+
+    @Override
+    public void onStreamReady(Torrent torrent) {
+        Log.d(TORRENT, "onStreamReady: " + torrent.getVideoFile());
+
+        System.out.println(torrent);
+        System.out.println(torrent.getFileNames());
+
+        System.out.println(torrent.getSaveLocation());
+
+    }
+
+    @Override
+    public void onStreamProgress(Torrent torrent, StreamStatus status) {
+        if(status.bufferProgress <= 100) {
+            Log.d(TORRENT, "Progress: " + status.bufferProgress);
+            System.out.println("Progress"+ status.bufferProgress);
+        }
+    }
+
+    @Override
+    public void onStreamStopped() {
+        Log.d(TORRENT, "onStreamStopped");
+    }
 
 
 }
