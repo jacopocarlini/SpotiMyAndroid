@@ -15,7 +15,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.WebView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -24,14 +23,14 @@ import android.widget.SearchView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.spotimyandroid.http.Api;
+import com.spotimyandroid.http.ApiHelper;
+import com.spotimyandroid.resources.MyTorrent;
 import com.spotimyandroid.utils.ApplicationSupport;
 import com.spotimyandroid.utils.BottomNavigationViewHelper;
 import com.spotimyandroid.utils.StringsValues;
 
-import org.json.JSONObject;
-
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -39,7 +38,6 @@ import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyCallback;
 import kaaes.spotify.webapi.android.SpotifyError;
 import kaaes.spotify.webapi.android.SpotifyService;
-import kaaes.spotify.webapi.android.models.Album;
 import kaaes.spotify.webapi.android.models.AlbumSimple;
 import kaaes.spotify.webapi.android.models.AlbumsPager;
 import kaaes.spotify.webapi.android.models.Artist;
@@ -96,6 +94,19 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
+        ApiHelper apiHelper = new ApiHelper(getApplicationContext());
+        apiHelper.scraper("caparezza", "prisoner 709", new ApiHelper.onTorrentCallback() {
+
+            @Override
+            public void onSuccess(List<MyTorrent> myTorrents) {
+                myTorrents.get(0).isGood();
+            }
+
+            @Override
+            public void onError(String err) {
+
+            }
+        });
     }
 
 
@@ -265,9 +276,6 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void success(TracksPager tracksPager, Response response) {
-                System.out.println(tracksPager.tracks.limit);
-                System.out.println(tracksPager.tracks.items.size());
-                System.out.println(tracksPager.tracks.items.get(3));
                 addElemToTracksView(tracksPager.tracks);
                 spotify.searchArtists(query, options, new SpotifyCallback<ArtistsPager>() {
                     @Override

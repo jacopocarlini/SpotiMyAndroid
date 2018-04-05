@@ -7,18 +7,14 @@ import android.content.SharedPreferences;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 
-import com.spotimyandroid.http.Api;
-
-import org.json.JSONObject;
+import com.spotimyandroid.http.ApiHelper;
+import com.spotimyandroid.resources.MyTorrent;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 import kaaes.spotify.webapi.android.models.Album;
@@ -45,9 +41,11 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     private ArrayList<Album> recentAlbums= new ArrayList<>(5);;
     private ArrayList<Artist> recentArtists= new ArrayList<>(5);;
     private String token;
+    private ApiHelper apiHelper;
 
 
     public void prepare(){
+        apiHelper =new ApiHelper(getApplicationContext());
         mp = new MediaPlayer();
         mp.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
@@ -139,10 +137,11 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     public void play() {
         System.out.println("play");
         addTrack();
-//
-//        if (mp.isPlaying()) mp.stop();
-//        mp.reset();
-////        try {
+
+        if (mp.isPlaying()) mp.stop();
+        mp.reset();
+
+//        try {
 //            state=StringsValues.DOWNLOADING;
 //            Map<String, String> headers = new HashMap<>();
 ////            headers.put("Content-Type", "audio/mp3"); // change content type if necessary
@@ -180,7 +179,7 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
 //            Intent i = new Intent(BROADCAST_PLAY);
 //            i.putExtra("next_track", true);
 //            sendBroadcast(i);
-
+//
 //
 //        } catch (IOException e) {
 //            e.printStackTrace();
