@@ -19,6 +19,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.frostwire.jlibtorrent.FileStorage;
 import com.github.se_bastiaan.torrentstream.StreamStatus;
 import com.github.se_bastiaan.torrentstream.Torrent;
 import com.github.se_bastiaan.torrentstream.TorrentOptions;
@@ -63,6 +64,10 @@ public class PlayerActivity extends AppCompatActivity implements TorrentListener
     private BroadcastReceiver mReceiverNext;
     private ApiHelper apiHelper;
     private TorrentStream torrentStream;
+    private List<MyTorrent> myTorrents;
+    private int index;
+    private ArrayList<File> torrentFiles;
+    private int fileSelected;
 
 
     @Override
@@ -84,9 +89,9 @@ public class PlayerActivity extends AppCompatActivity implements TorrentListener
                     new ApiHelper.onTorrentCallback() {
 
                         @Override
-                        public void onSuccess(List<MyTorrent> myTorrents) {
-                            //TODO:
-
+                        public void onSuccess(List<MyTorrent> myTorrentsFound) {
+                            myTorrents=myTorrentsFound;
+//                            search(myTorrents, index=0);
                             TorrentOptions torrentOptions = new TorrentOptions.Builder()
                                     .saveLocation(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS))
                                     .removeFilesAfterStop(true)
@@ -95,7 +100,6 @@ public class PlayerActivity extends AppCompatActivity implements TorrentListener
                             torrentStream = TorrentStream.init(torrentOptions);
                             torrentStream.addListener(PlayerActivity.this);
                             torrentStream.startStream(myTorrents.get(0).getMagnet());
-//                            app.play();
                         }
 
                         @Override
@@ -133,6 +137,20 @@ public class PlayerActivity extends AppCompatActivity implements TorrentListener
 
     }
 
+    private void search(List<MyTorrent> myTorrents, int i){
+        System.out.println("search");
+        System.out.println(myTorrents);
+        System.out.println(i);
+        if(i>myTorrents.size()) return;
+        TorrentOptions torrentOptions = new TorrentOptions.Builder()
+                .saveLocation(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS))
+                .removeFilesAfterStop(true)
+                .build();
+
+        torrentStream = TorrentStream.init(torrentOptions);
+        torrentStream.addListener(PlayerActivity.this);
+        torrentStream.startStream(myTorrents.get(i).getMagnet());
+    }
 
     @Override
     protected void onResume() {
@@ -262,7 +280,24 @@ public class PlayerActivity extends AppCompatActivity implements TorrentListener
 
     @Override
     public void onStreamPrepared(Torrent torrent) {
-        torrent.setSelectedFileIndex(trackInfo.track_number);
+//        System.out.println("stream prepared");
+////        ArrayList<File> f = new ArrayList<>();
+////        listf(torrent.getSaveLocation().getAbsolutePath(), f);
+////        System.out.println("filelist "+ f);
+//        System.out.println(torrent.getTorrentHandle().getTorrentInfo().collections());
+//        fileSelected=isPresent(torrent.getTorrentHandle().getTorrentInfo().origFiles(), trackInfo);
+//        if (fileSelected!=-1) {
+//            System.out.println("file trovato, indice" + fileSelected);
+//            System.out.println("torrent trovato, indice" + index);
+//            torrent.setSelectedFileIndex(fileSelected);
+//            torrent.startDownload();
+//        }
+//        else{
+//            System.out.println("non è il torrent che cerco");
+//            torrentStream.stopStream();
+//            search(myTorrents , index+1);
+//        }
+
         torrent.startDownload();
 
     }
@@ -280,43 +315,50 @@ public class PlayerActivity extends AppCompatActivity implements TorrentListener
 
     @Override
     public void onStreamReady(Torrent torrent) {
-//        app.play(getFile(torrent.getSaveLocation()));
-        ArrayList<File> files = new ArrayList<>();
-        listf(torrent.getSaveLocation().getAbsolutePath(), files);
-        app.play(chooseFile(files, trackInfo));
+        fileSelected = isPresent(torrent, trackInfo);
+//        app.play(torrentFiles.get(fileSelected).getAbsolutePath());
     }
 
-    private String chooseFile(ArrayList<File> files, Track track) {
-        for(int i=0; i<files.size(); i++){
-            File file = files.get(i);
-            String filename = file.getName().toLowerCase();
+    private int isPresent(Torrent torrent, Track track) {
+        System.out.println("ispresent");
+        ArrayList<File> files = new ArrayList<>();
+        listf(torrent.getSaveLocation().getAbsolutePath(), files);
+        torrentFiles=files;
+        for(int i=0; i<torrentFiles.size(); i++){
+            String filename = "";
+            System.out.println(filename);
             String trackname = track.name.toLowerCase();
             String[] parts = trackname.split(" ");
-            if (filename.indexOf(".mp3") > -1  || filename.indexOf(".wav") > -1 || filename.indexOf(".flac") > -1) {
-                // console.log("NON ha il nome che cerco")
+            if (!(filename.indexOf(".mp3") > -1  || filename.indexOf(".wav") > -1 || filename.indexOf(".flac") > -1)) {
+                return -1;
+            }
 
-                if (filename.indexOf(trackname) > -1) {
-                    // console.log("ha il nome che cerco")
-                    return file.getAbsolutePath();
-                }
-                int total = parts.length;
-                int count=0;
-                for(int j=0; j<parts.length; j++){
-                    if (filename.indexOf(parts[j]) > -1){
-                        count=count+1;
-                    }
-                }
-                // console.log("total="+total/2+" count="+count);
-                if(count>=total/2){
-                    return file.getAbsolutePath();
+            if (filename.indexOf(trackname) > -1) {
+                // console.log("ha il nome che cerco")
+                return i;
+            }
+            int total = parts.length;
+            int count=0;
+            for(int j=0; j<parts.length; j++){
+                if (filename.indexOf(parts[j]) > -1){
+                    count=count+1;
                 }
             }
-        }
-        return null;
+            // console.log("total="+total/2+" count="+count);
+            if(count>=total/2){
+                return i;
+            }
+            else  return -1;
+            }
+
+        return -1;
     }
 
     public void listf(String directoryName, ArrayList<File> files) {
+        System.out.println("listf");
+        System.out.println(directoryName);
         File directory = new File(directoryName);
+        if(!directory.exists()) directory.mkdir();
 
         // get all the files from a directory
         File[] fList = directory.listFiles();

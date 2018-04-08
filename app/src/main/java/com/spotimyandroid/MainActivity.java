@@ -194,14 +194,14 @@ public class MainActivity extends AppCompatActivity {
         textAlbums.setText(R.string.recent_albums);
         textArtists.setText(R.string.recent_artists);
 
-        SharedPreferences sharedPref = getSharedPreferences( "recent", Context.MODE_PRIVATE );
-        Gson gson = new Gson();
-
-        String json = sharedPref.getString("tracks", "");
-//        System.out.println(json);
-        ArrayList<Track> tracks = gson.fromJson(json, ArrayList.class);
-        app.addRecentTracks(tracks);
-        addElemToTracksView(tracks);
+//        SharedPreferences sharedPref = getSharedPreferences( "recent", Context.MODE_PRIVATE );
+//        Gson gson = new Gson();
+//
+//        String json = sharedPref.getString("tracks", "");
+////        System.out.println(json);
+//        ArrayList<Track> tracks = gson.fromJson(json, ArrayList.class);
+//        app.addRecentTracks(tracks);
+//        addElemToTracksView(tracks);
 
 //        String a = sharedPref.getString("albums", "");
 //        app.addRecentAlbums(Album.toArray(a));
@@ -295,7 +295,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void success(ArtistsPager artistsPager, Response response) {
-                        addElemToArtistsView(artistsPager.artists);
+                        addElemToArtistsView(artistsPager.artists.items);
                         spotify.searchAlbums(query, options, new SpotifyCallback<AlbumsPager>() {
                             @Override
                             public void failure(SpotifyError spotifyError) {
@@ -304,7 +304,7 @@ public class MainActivity extends AppCompatActivity {
 
                             @Override
                             public void success(AlbumsPager albumsPager, Response response) {
-                                addElemToAlbumsView(albumsPager.albums);
+                                addElemToAlbumsView(albumsPager.albums.items);
                             }
                         });
                     }
@@ -343,16 +343,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void addElemToArtistsView(final Pager<Artist> artists) {
+    private void addElemToArtistsView(final List<Artist> artists) {
         artistsView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        for (int i =0; i<artists.items.size(); i++){
+        for (int i =0; i<artists.size(); i++){
             View elem = inflater.inflate(R.layout.item_artist, null);
             TextView name = (TextView) elem.findViewById(R.id.artist);
-            name.setText(artists.items.get(i).name);
+            name.setText(artists.get(i).name);
             CircleImageView image = (CircleImageView) elem.findViewById(R.id.image);
-            if (!artists.items.get(i).images.isEmpty()) {
-                Glide.with(this).load(artists.items.get(i).images.get(0).url).into(image);
+            if (!artists.get(i).images.isEmpty()) {
+                Glide.with(this).load(artists.get(i).images.get(0).url).into(image);
             }
             final int finalI = i;
             elem.setOnClickListener(new View.OnClickListener() {
@@ -360,7 +360,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), ArtistActivity.class);
                     TextView name = (TextView) view.findViewById(R.id.artist);
-                    intent.putExtra("artist", artists.items.get(finalI));
+                    intent.putExtra("artist", artists.get(finalI));
                     startActivity(intent);
                 }
             });
@@ -368,23 +368,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void addElemToAlbumsView(final Pager<AlbumSimple> albums) {
+    private void addElemToAlbumsView(final List<AlbumSimple> albums) {
         albumsView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        for (int i =0; i<albums.items.size(); i++){
+        for (int i =0; i<albums.size(); i++){
             View elem = inflater.inflate(R.layout.item_album, null);
             TextView name = (TextView) elem.findViewById(R.id.name);
-            name.setText(albums.items.get(i).name);
+            name.setText(albums.get(i).name);
             ImageView cover = (ImageView) elem.findViewById(R.id.cover);
-            if (!albums.items.get(i).images.isEmpty()) {
-                Glide.with(this).load(albums.items.get(i).images.get(0).url).into(cover);
+            if (!albums.get(i).images.isEmpty()) {
+                Glide.with(this).load(albums.get(i).images.get(0).url).into(cover);
             }
             final int finalI = i;
             elem.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), AlbumActivity.class);
-                    intent.putExtra("album", albums.items.get(finalI));
+                    intent.putExtra("album", albums.get(finalI));
                     startActivity(intent);
                 }
             });

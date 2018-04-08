@@ -108,6 +108,10 @@ public class MyTorrent  {
     }
 
 
-
-
+    @Override
+    public String toString() {
+        return "MyTorrent{" +
+                "name='" + name + '\'' +
+                '}';
+    }
 }
