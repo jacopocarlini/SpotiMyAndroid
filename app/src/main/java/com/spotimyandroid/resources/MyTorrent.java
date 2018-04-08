@@ -10,7 +10,7 @@ import com.github.se_bastiaan.torrentstream.TorrentOptions;
 import com.github.se_bastiaan.torrentstream.TorrentStream;
 import com.github.se_bastiaan.torrentstream.listeners.TorrentListener;
 
-public class MyTorrent implements TorrentListener {
+public class MyTorrent  {
     private static final String TORRENT = "torrent";
     private TorrentStream torrentStream;
     private String name;
@@ -108,59 +108,6 @@ public class MyTorrent implements TorrentListener {
     }
 
 
-    public void isGood(){
-        TorrentOptions torrentOptions = new TorrentOptions.Builder()
-                .saveLocation(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS))
-                .removeFilesAfterStop(true)
-                .build();
-
-        torrentStream = TorrentStream.init(torrentOptions);
-        torrentStream.addListener(this);
-        torrentStream.startStream(magnet);
-    }
 
 
-    @Override
-    public void onStreamPrepared(Torrent torrent) {
-        boolean found = false;
-        for (String name: torrent.getFileNames()) {
-            System.out.println(name);
-            if(isPresent(name, title)){
-                found=true;
-                break;
-            }
-        }
-        if(!found){
-
-        }
-    }
-
-    private boolean isPresent(String name, String title) {
-        return true;
-    }
-
-    @Override
-    public void onStreamStarted(Torrent torrent) {
-        System.out.println("onStreamStarted");
-    }
-
-    @Override
-    public void onStreamError(Torrent torrent, Exception e) {
-
-    }
-
-    @Override
-    public void onStreamReady(Torrent torrent) {
-
-    }
-
-    @Override
-    public void onStreamProgress(Torrent torrent, StreamStatus streamStatus) {
-
-    }
-
-    @Override
-    public void onStreamStopped() {
-
-    }
 }

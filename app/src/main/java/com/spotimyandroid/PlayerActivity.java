@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +19,11 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.github.se_bastiaan.torrentstream.StreamStatus;
+import com.github.se_bastiaan.torrentstream.Torrent;
+import com.github.se_bastiaan.torrentstream.TorrentOptions;
+import com.github.se_bastiaan.torrentstream.TorrentStream;
+import com.github.se_bastiaan.torrentstream.listeners.TorrentListener;
 import com.spotimyandroid.http.Api;
 import com.spotimyandroid.http.ApiHelper;
 import com.spotimyandroid.resources.MyTorrent;
@@ -27,6 +33,8 @@ import com.spotimyandroid.utils.StringsValues;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import kaaes.spotify.webapi.android.models.Track;
@@ -35,7 +43,7 @@ import kaaes.spotify.webapi.android.models.Track;
  * Created by Jacopo on 11/03/2018.
  */
 
-public class PlayerActivity extends AppCompatActivity{
+public class PlayerActivity extends AppCompatActivity implements TorrentListener {
 
     private SeekBar seekBar;
     private ImageButton previous;
@@ -54,6 +62,7 @@ public class PlayerActivity extends AppCompatActivity{
     private BroadcastReceiver mReceiverPlay;
     private BroadcastReceiver mReceiverNext;
     private ApiHelper apiHelper;
+    private TorrentStream torrentStream;
 
 
     @Override
@@ -77,9 +86,15 @@ public class PlayerActivity extends AppCompatActivity{
                         @Override
                         public void onSuccess(List<MyTorrent> myTorrents) {
                             //TODO:
-                            for (MyTorrent myTorrent: myTorrents){
 
-                            }
+                            TorrentOptions torrentOptions = new TorrentOptions.Builder()
+                                    .saveLocation(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS))
+                                    .removeFilesAfterStop(true)
+                                    .build();
+
+                            torrentStream = TorrentStream.init(torrentOptions);
+                            torrentStream.addListener(PlayerActivity.this);
+                            torrentStream.startStream(myTorrents.get(0).getMagnet());
 //                            app.play();
                         }
 
@@ -245,10 +260,83 @@ public class PlayerActivity extends AppCompatActivity{
     }
 
 
+    @Override
+    public void onStreamPrepared(Torrent torrent) {
+        torrent.setSelectedFileIndex(trackInfo.track_number);
+        torrent.startDownload();
+
+    }
+
+    @Override
+    public void onStreamStarted(Torrent torrent) {
 
 
+    }
+
+    @Override
+    public void onStreamError(Torrent torrent, Exception e) {
+
+    }
+
+    @Override
+    public void onStreamReady(Torrent torrent) {
+//        app.play(getFile(torrent.getSaveLocation()));
+        ArrayList<File> files = new ArrayList<>();
+        listf(torrent.getSaveLocation().getAbsolutePath(), files);
+        app.play(chooseFile(files, trackInfo));
+    }
+
+    private String chooseFile(ArrayList<File> files, Track track) {
+        for(int i=0; i<files.size(); i++){
+            File file = files.get(i);
+            String filename = file.getName().toLowerCase();
+            String trackname = track.name.toLowerCase();
+            String[] parts = trackname.split(" ");
+            if (filename.indexOf(".mp3") > -1  || filename.indexOf(".wav") > -1 || filename.indexOf(".flac") > -1) {
+                // console.log("NON ha il nome che cerco")
+
+                if (filename.indexOf(trackname) > -1) {
+                    // console.log("ha il nome che cerco")
+                    return file.getAbsolutePath();
+                }
+                int total = parts.length;
+                int count=0;
+                for(int j=0; j<parts.length; j++){
+                    if (filename.indexOf(parts[j]) > -1){
+                        count=count+1;
+                    }
+                }
+                // console.log("total="+total/2+" count="+count);
+                if(count>=total/2){
+                    return file.getAbsolutePath();
+                }
+            }
+        }
+        return null;
+    }
+
+    public void listf(String directoryName, ArrayList<File> files) {
+        File directory = new File(directoryName);
+
+        // get all the files from a directory
+        File[] fList = directory.listFiles();
+        for (File file : fList) {
+            if (file.isFile()) {
+                files.add(file);
+            } else if (file.isDirectory()) {
+                listf(file.getAbsolutePath(), files);
+            }
+        }
+    }
 
 
+    @Override
+    public void onStreamProgress(Torrent torrent, StreamStatus streamStatus) {
 
+    }
 
+    @Override
+    public void onStreamStopped() {
+
+    }
 }
