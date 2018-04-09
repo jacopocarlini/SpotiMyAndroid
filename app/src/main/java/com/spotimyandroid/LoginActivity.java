@@ -49,6 +49,7 @@ public class LoginActivity  extends AppCompatActivity{
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
+        System.out.println("login");
 
         // Check if result comes from the correct activity
         if (requestCode == REQUEST_CODE) {
@@ -56,10 +57,15 @@ public class LoginActivity  extends AppCompatActivity{
             if (response.getType() == AuthenticationResponse.Type.TOKEN) {
                 System.out.println(response.getAccessToken());
                 app.setToken(response.getAccessToken());
+                System.out.println("main");
                 Intent i = new Intent(getApplicationContext(), MainActivity.class);
                 startActivity(i);
                 finish();
             }
+            else System.out.println(response.getError());
+        }
+        else{
+            System.out.println("login fallito");
         }
     }
 }

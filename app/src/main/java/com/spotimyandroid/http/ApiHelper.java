@@ -41,7 +41,11 @@ public class ApiHelper {
         try {
             Document doc = Jsoup.connect(api.torrentX1337URL(artist,album)).get();
             Elements table = doc.select(".table-list.table.table-responsive.table-striped");
-            Elements lines = table.get(0).children().get(1).children();
+            Elements lines = new Elements(0);
+            try{
+                lines = table.get(0).children().get(1).children();
+            }
+            catch (Exception e){callback.onSuccess(new ArrayList<MyTorrent>(0));}
             ArrayList<MyTorrent> myTorrents = new ArrayList();
 
             for (Element line : lines) {

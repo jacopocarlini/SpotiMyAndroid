@@ -65,9 +65,10 @@ public class PlayerActivity extends AppCompatActivity implements TorrentListener
     private ApiHelper apiHelper;
     private TorrentStream torrentStream;
     private List<MyTorrent> myTorrents;
-    private int index;
+    private int index=0;
     private ArrayList<File> torrentFiles;
     private int fileSelected;
+    private boolean flag = true;
 
 
     @Override
@@ -84,22 +85,25 @@ public class PlayerActivity extends AppCompatActivity implements TorrentListener
 
         Intent i = getIntent();
         String info = i.getStringExtra("info");
-        if(!info.equals("openonly")) {  //if info is equals to play then play song
+        if(!info.equals("openonly") && flag) {  //if info is equals to play then play song
+            flag=false;
             apiHelper.scraper(app.getCurrentTrack().artists.get(0).name, app.getCurrentTrack().album.name,
                     new ApiHelper.onTorrentCallback() {
 
                         @Override
                         public void onSuccess(List<MyTorrent> myTorrentsFound) {
+                            System.out.println("scraping finito");
                             myTorrents=myTorrentsFound;
-//                            search(myTorrents, index=0);
-                            TorrentOptions torrentOptions = new TorrentOptions.Builder()
-                                    .saveLocation(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS))
-                                    .removeFilesAfterStop(true)
-                                    .build();
 
-                            torrentStream = TorrentStream.init(torrentOptions);
-                            torrentStream.addListener(PlayerActivity.this);
-                            torrentStream.startStream(myTorrents.get(0).getMagnet());
+                            search(myTorrents, index=0);
+//                            TorrentOptions torrentOptions = new TorrentOptions.Builder()
+//                                    .saveLocation(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS))
+//                                    .removeFilesAfterStop(true)
+//                                    .build();
+//
+//                            torrentStream = TorrentStream.init(torrentOptions);
+//                            torrentStream.addListener(PlayerActivity.this);
+//                            torrentStream.startStream(myTorrents.get(0).getMagnet());
                         }
 
                         @Override
@@ -141,7 +145,7 @@ public class PlayerActivity extends AppCompatActivity implements TorrentListener
         System.out.println("search");
         System.out.println(myTorrents);
         System.out.println(i);
-        if(i>myTorrents.size()) return;
+        if(i>=myTorrents.size()) return;
         TorrentOptions torrentOptions = new TorrentOptions.Builder()
                 .saveLocation(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS))
                 .removeFilesAfterStop(true)
@@ -280,63 +284,75 @@ public class PlayerActivity extends AppCompatActivity implements TorrentListener
 
     @Override
     public void onStreamPrepared(Torrent torrent) {
-//        System.out.println("stream prepared");
-////        ArrayList<File> f = new ArrayList<>();
-////        listf(torrent.getSaveLocation().getAbsolutePath(), f);
-////        System.out.println("filelist "+ f);
-//        System.out.println(torrent.getTorrentHandle().getTorrentInfo().collections());
-//        fileSelected=isPresent(torrent.getTorrentHandle().getTorrentInfo().origFiles(), trackInfo);
-//        if (fileSelected!=-1) {
-//            System.out.println("file trovato, indice" + fileSelected);
-//            System.out.println("torrent trovato, indice" + index);
-//            torrent.setSelectedFileIndex(fileSelected);
-//            torrent.startDownload();
-//        }
-//        else{
-//            System.out.println("non è il torrent che cerco");
-//            torrentStream.stopStream();
+        System.out.println("stream prepared");
+//        ArrayList<File> f = new ArrayList<>();
+//        listf(torrent.getSaveLocation().getAbsolutePath(), f);
+//        System.out.println("filelist "+ f);
+        ArrayList<String> paths = new ArrayList<>();
+        for(int i=0; i<torrent.getTorrentHandle().getTorrentInfo().numFiles(); i++) {
+            paths.add(torrent.getTorrentHandle().getTorrentInfo().files().fileName(i));
+//            System.out.println(torrent.getTorrentHandle().getTorrentInfo().files().filePath(i));
+//            System.out.println(torrent.getTorrentHandle().getTorrentInfo().files().fileName(i));
+        }
+        fileSelected=isPresent(paths, trackInfo);
+        if (fileSelected!=-1) {
+            System.out.println("file trovato, indice" + fileSelected);
+            System.out.println("torrent trovato, indice" + index);
+            torrent.setSelectedFileIndex(fileSelected);
+            torrent.startDownload();
+        }
+        else{
+            System.out.println("non è il torrent che cerco");
+            torrentStream.stopStream();
 //            search(myTorrents , index+1);
-//        }
+        }
 
-        torrent.startDownload();
+
+        //torrent.startDownload();
 
     }
 
     @Override
     public void onStreamStarted(Torrent torrent) {
-
-
+        app.play(Environment.getExternalStorageDirectory()
+                +"/Download/"+
+                torrent.getTorrentHandle().getTorrentInfo().files().filePath(fileSelected));
     }
 
     @Override
     public void onStreamError(Torrent torrent, Exception e) {
-
+        torrentStream.stopStream();
     }
 
     @Override
     public void onStreamReady(Torrent torrent) {
-        fileSelected = isPresent(torrent, trackInfo);
+//        fileSelected = isPresent(torrent, trackInfo);
 //        app.play(torrentFiles.get(fileSelected).getAbsolutePath());
     }
 
-    private int isPresent(Torrent torrent, Track track) {
-        System.out.println("ispresent");
-        ArrayList<File> files = new ArrayList<>();
-        listf(torrent.getSaveLocation().getAbsolutePath(), files);
-        torrentFiles=files;
-        for(int i=0; i<torrentFiles.size(); i++){
-            String filename = "";
-            System.out.println(filename);
+    private int isPresent(List<String> paths, Track track) {
+        System.out.println("ispresent "+ track.name);
+        ArrayList<String> files = (ArrayList<String>) paths;
+        System.out.println(files.size());
+        System.out.println(files);
+        for(int k=0; k<files.size(); k++){
+            System.out.println(k);
+            String filename = files.get(k).toLowerCase();
+//            System.out.println(filename);
             String trackname = track.name.toLowerCase();
             String[] parts = trackname.split(" ");
-            if (!(filename.indexOf(".mp3") > -1  || filename.indexOf(".wav") > -1 || filename.indexOf(".flac") > -1)) {
+            if (!(filename.contains(".mp3")  || filename.contains(".wav") || filename.contains(".flac"))) {
                 return -1;
             }
-
-            if (filename.indexOf(trackname) > -1) {
+            System.out.println("è un audio");
+            System.out.println(filename);
+            System.out.println(trackname);
+            System.out.println(filename.contains(trackname));
+            if (filename.contains(trackname)) {
                 // console.log("ha il nome che cerco")
-                return i;
+                return k;
             }
+            System.out.println("non c'è il nome");
             int total = parts.length;
             int count=0;
             for(int j=0; j<parts.length; j++){
@@ -344,12 +360,13 @@ public class PlayerActivity extends AppCompatActivity implements TorrentListener
                     count=count+1;
                 }
             }
+            System.out.println(count);
             // console.log("total="+total/2+" count="+count);
             if(count>=total/2){
-                return i;
+                return k;
             }
-            else  return -1;
-            }
+
+        }
 
         return -1;
     }
@@ -374,7 +391,7 @@ public class PlayerActivity extends AppCompatActivity implements TorrentListener
 
     @Override
     public void onStreamProgress(Torrent torrent, StreamStatus streamStatus) {
-
+//        System.out.println(streamStatus.bufferProgress);
     }
 
     @Override
