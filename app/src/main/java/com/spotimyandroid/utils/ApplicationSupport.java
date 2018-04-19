@@ -10,6 +10,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 
 import com.spotimyandroid.http.Api;
+import com.spotimyandroid.http.ApiHelper;
 
 import org.json.JSONObject;
 
@@ -139,55 +140,55 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     public void play() {
         System.out.println("play");
         addTrack();
-//
-//        if (mp.isPlaying()) mp.stop();
-//        mp.reset();
-////        try {
-//            state=StringsValues.DOWNLOADING;
-//            Map<String, String> headers = new HashMap<>();
-////            headers.put("Content-Type", "audio/mp3"); // change content type if necessary
-//            headers.put("Accept-Ranges", "bytes");
-//            headers.put("Status", "206");
-//            headers.put("Cache-control", "no-cache");
-//
-//            String url = Api.getTrackURL(getCurrentTrack().getArtist(),getCurrentTrack().getAlbum(), getCurrentTrack().getName());
-//            Uri uri = Uri.parse(url);
-////            mp.setDataSource(getApplicationContext() , uri, headers);
-//        try {
-//            mp.setDataSource(url);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        System.out.println("setDatasource");
-//            mp.prepareAsync();
-//            //mp3 will be started after completion of preparing...
-//            mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-//
-//                @Override
-//                public void onPrepared(MediaPlayer player) {
-//                    System.out.println("preparate");
-//                    player.start();
-//                    state=StringsValues.PLAY;
-//                    Intent i = new Intent(BROADCAST_PLAY);
-//                    i.putExtra("next_track", true);
-//                    sendBroadcast(i);
-//                }
-//
-//            });
-//            System.out.println("preparate");
-//            mp.start();
-//            state=StringsValues.PLAY;
-//            Intent i = new Intent(BROADCAST_PLAY);
-//            i.putExtra("next_track", true);
-//            sendBroadcast(i);
 
+        if (mp.isPlaying()) mp.stop();
+        mp.reset();
+        state=StringsValues.DOWNLOADING;
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "audio/mp3"); // change content type if necessary
+        headers.put("Accept-Ranges", "bytes");
+        headers.put("Status", "206");
+        headers.put("Cache-control", "no-cache");
+        ApiHelper apiHelper = new ApiHelper(getApplicationContext());
+        apiHelper.findTracks(getCurrentTrack().artists.get(0).name + " " + getCurrentTrack().name, new ApiHelper.onMusicCallback() {
+            @Override
+            public void onSuccess(String url) {
+                try {
+                    System.out.println(url);
+                    mp.setDataSource(url);
+                    System.out.println("setDatasource");
+                    mp.prepare();
+                    //mp3 will be started after completion of preparing...
+//                    mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
 //
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+//                        @Override
+//                        public void onPrepared(MediaPlayer player) {
+//                            System.out.println("preparate");
+//                            player.start();
+//                            state=StringsValues.PLAY;
+//                            Intent i = new Intent(BROADCAST_PLAY);
+//                            i.putExtra("next_track", true);
+//                            sendBroadcast(i);
+//                        }
+//
+//                    });
+                    System.out.println("preparate");
+                    mp.start();
+                    state=StringsValues.PLAY;
+                    Intent i = new Intent(BROADCAST_PLAY);
+                    i.putExtra("next_track", true);
+                    sendBroadcast(i);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
 
+            }
 
+            @Override
+            public void onError(String error) {
 
+            }
+        });
     }
 
     public void nextTrack() {

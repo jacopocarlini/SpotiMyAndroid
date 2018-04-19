@@ -29,6 +29,7 @@ import com.spotimyandroid.utils.ApplicationSupport;
 import com.spotimyandroid.utils.BottomNavigationViewHelper;
 import com.spotimyandroid.utils.StringsValues;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -265,9 +266,9 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void success(TracksPager tracksPager, Response response) {
-                System.out.println(tracksPager.tracks.limit);
-                System.out.println(tracksPager.tracks.items.size());
-                System.out.println(tracksPager.tracks.items.get(3));
+//                System.out.println(tracksPager.tracks.limit);
+//                System.out.println(tracksPager.tracks.items.size());
+//                System.out.println(tracksPager.tracks.items.get(3));
                 addElemToTracksView(tracksPager.tracks);
                 spotify.searchArtists(query, options, new SpotifyCallback<ArtistsPager>() {
                     @Override

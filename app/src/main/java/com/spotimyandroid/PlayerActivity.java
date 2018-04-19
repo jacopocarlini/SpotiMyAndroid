@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.spotimyandroid.http.Api;
+import com.spotimyandroid.http.ApiHelper;
 import com.spotimyandroid.utils.ApplicationSupport;
 import com.spotimyandroid.utils.StringsValues;
 
@@ -50,6 +51,7 @@ public class PlayerActivity extends AppCompatActivity{
     private AsyncTask downloadSong;
     private BroadcastReceiver mReceiverPlay;
     private BroadcastReceiver mReceiverNext;
+    private ApiHelper apiHelper;
 
 
     @Override
@@ -61,6 +63,7 @@ public class PlayerActivity extends AppCompatActivity{
         mediaPlayer = as.getMP();
         server = new Api(this);
         trackInfo = as.getCurrentTrack();
+        apiHelper = new ApiHelper(getApplicationContext());
 
         initiview();
 
@@ -68,15 +71,6 @@ public class PlayerActivity extends AppCompatActivity{
         String info = i.getStringExtra("info");
         if(!info.equals("openonly")) {
             as.play();
-//            downloadSong = new AsyncTask() {
-//                @Override
-//                protected Object doInBackground(Object[] objects) {
-//                    as.play();
-//                    return null;
-//                }
-//            };
-//
-//            downloadSong.execute();
         }
 
 
@@ -190,25 +184,25 @@ public class PlayerActivity extends AppCompatActivity{
         lyric = (TextView) findViewById(R.id.lyric);
         lyric.setMovementMethod(new ScrollingMovementMethod());
 
-//        track.setText(trackInfo.getName());
-//        album.setText(trackInfo.getAlbum());
-//        artist.setText(trackInfo.getArtist());
-//        server.lyric(trackInfo.getArtist(), trackInfo.getName(), new Api.VolleyCallback() {
-//            @Override
-//            public void onSuccess(JSONObject result) {
-//                try {
-//                    lyric.setText(parseLyric(result.getString("lyric")));
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
-//
-//        cover=(ImageView) findViewById(R.id.cover);
-//        if (trackInfo.hasCover()){
-//            Glide.with(this).load(trackInfo.getCover()).into(cover);
-//
-//        }
+        track.setText(trackInfo.name);
+        album.setText(trackInfo.album.name);
+        artist.setText(trackInfo.artists.get(0).name);
+        apiHelper.getLyric(trackInfo.artists.get(0).name, trackInfo.name, new ApiHelper.onLyricCallback() {
+            @Override
+            public void onSuccess(String lyricText) {
+                lyric.setText(lyricText);
+            }
+
+            @Override
+            public void onError(String err) {
+                System.out.println(err);
+            }
+        });
+
+        cover=(ImageView) findViewById(R.id.cover);
+        if (!trackInfo.album.images.isEmpty()){
+            Glide.with(this).load(trackInfo.album.images.get(0).url).into(cover);
+        }
 
 
 
@@ -234,16 +228,7 @@ public class PlayerActivity extends AppCompatActivity{
     }
 
 
-    private String parseLyric(String s){
-       s=s.replaceAll("&#xE8;","è");
-       s=s.replaceAll("&#xE9;","é");
-       s=s.replaceAll("&#xF2;","ò");
-       s=s.replaceAll("&#xE0;","à");
-       s=s.replaceAll("&#xEC;","ì");
-       s=s.replaceAll("&#xF9;","ù");
-       s=s.replaceAll("&#x2019;","'");
-       return s;
-    }
+
 
 
 

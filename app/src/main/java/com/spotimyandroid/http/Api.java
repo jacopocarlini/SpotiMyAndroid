@@ -8,9 +8,14 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Jacopo on 11/03/2018.
@@ -18,13 +23,6 @@ import org.json.JSONObject;
 
 
 public class Api {
-//    private static String SERVER_IP = "10.0.2.2"; //localhost
-//    private static String SERVER_IP = "192.168.1.15"; //pc
-//    private static String SERVER_IP = "104.40.208.29"; //azure
-    private static String SERVER_IP = "casacarlini.homepc.it"; //raspberyy
-//    private static String SERVER_PORT = "3000";
-    private static String SERVER_PORT = "3001";
-
     public static final String TAG = "API";
     private static Context contextS;
     private Context context;
@@ -34,10 +32,52 @@ public class Api {
 
     public Api(Context context) {
         this.context = context;
-        contextS=context;
+//        contextS=context;
         // Get a RequestQueue
         queue = RequestQueue_Singeton.getInstance(context).getRequestQueue();
     }
+
+
+    private void callHTML(String url, final String query, final HTMLCallback callback) {
+        try {
+            StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                             callback.onSuccess(response);
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            callback.onError(error.getMessage());
+                        }
+                    }){
+                @Override
+                protected Map<String,String> getParams(){
+                    Map<String,String> params = new HashMap<String, String>();
+                    params.put("q", query);
+                    params.put("sort", "2");
+                    params.put("count", "300");
+                    params.put("performer_only", "0");
+                    return params;
+                }
+            };
+
+            RequestQueue_Singeton.getInstance(context).addToRequestQueue(stringRequest);
+        }
+        catch (Exception e){
+
+        }
+    }
+
+    public void findTrack(String query, final HTMLCallback callback) {
+        // Instantiate the RequestQueue.
+
+        String url = "https://my-free-mp3.net/api/search.php?";
+        callHTML(url, query,callback);
+    }
+
 
     private void call(String url, final VolleyCallback callback) {
         // Request a string response from the provided URL.
@@ -69,70 +109,9 @@ public class Api {
     }
 
 
-
-    public void findTrack(String query, final VolleyCallback callback) {
-        // Instantiate the RequestQueue.
-
-        String url = "http://" + SERVER_IP + ":"+SERVER_PORT+"/track/" + sostituisci(query);
-        call(url, callback);
-    }
-
-    public void findArtist(String query, final VolleyCallback callback) {
-        // Instantiate the RequestQueue.
-
-        String url = "http://" + SERVER_IP + ":"+SERVER_PORT+"/artist/" + sostituisci(query);
-        call(url, callback);
-    }
-
-    public void findAlbum(String query, final VolleyCallback callback) {
-        // Instantiate the RequestQueue.
-
-        String url = "http://" + SERVER_IP + ":"+SERVER_PORT+"/album/" + sostituisci(query);
-        call(url, callback);
-    }
-
     public void lyric(String artist, String track, final VolleyCallback callback) {
         // Instantiate the RequestQueue.
-
-        String url = "http://" + SERVER_IP + ":"+SERVER_PORT+"/lyric/" + sostituisci(artist)+"/"+sostituisci(track);
-        call(url, callback);
-    }
-
-    public void findTracksOfAlbum(String id, final VolleyCallback callback) {
-        // Instantiate the RequestQueue.
-
-        String url = "http://" + SERVER_IP + ":"+SERVER_PORT+"/tracks_of_album/" + sostituisci(id);
-        call(url, callback);
-    }
-
-    public void findAlbumsOfArtist(String id, final VolleyCallback callback) {
-        // Instantiate the RequestQueue.
-
-        String url = "http://" + SERVER_IP + ":"+SERVER_PORT+"/albums_of_artist/" + sostituisci(id);
-        call(url, callback);
-    }
-
-    public void findPopularOfArtist(String id, final VolleyCallback callback) {
-        // Instantiate the RequestQueue.
-
-        String url = "http://" + SERVER_IP + ":"+SERVER_PORT+"/popular_of_artist/" + sostituisci(id);
-        call(url, callback);
-    }
-
-    public static String getTrackURL(String artist, String album, String track) {
-        track = track.split("-")[0];
-        return  "http://" + SERVER_IP + ":"+SERVER_PORT+"/play_torrent/" + sostituisci(artist)+"/" + sostituisci(album)+"/"+ sostituisci(track);
-
-    }
-
-    public void getTrackURL2(String artist, String album, String track, VolleyCallback callback) {
-        String url ="http://" + SERVER_IP + ":"+SERVER_PORT+"/play_torrent/" + sostituisci(artist)+"/" + sostituisci(album)+"/"+ sostituisci(track);
-        call(url, callback);
-    }
-
-
-    public void play(String artist, String track, final VolleyCallback callback) {
-        String url = "http://" + SERVER_IP + ":"+SERVER_PORT+"/play/" + sostituisci(artist)+"/"+sostituisci(track);
+        String url = "http://lyric-api.herokuapp.com/api/find/" + sostituisci(artist)+"/"+sostituisci(track);
         call(url, callback);
     }
 
@@ -153,14 +132,13 @@ public class Api {
         this.offset=i;
     }
 
-    public void torrent(String filepath, VolleyCallback callback) {
-        String url = "http://" + SERVER_IP + ":"+SERVER_PORT+"/torrent/" + sostituisci(filepath);
-        call(url, callback);
-    }
-
 
     public interface VolleyCallback {
         void onSuccess(JSONObject result);
     }
 
+    public interface HTMLCallback {
+            void onSuccess(String result);
+            void onError(String error);
+    }
 }
