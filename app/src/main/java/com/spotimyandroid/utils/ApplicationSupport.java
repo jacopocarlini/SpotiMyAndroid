@@ -44,7 +44,7 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     private MediaPlayer mp;
     private int pointer=0;
     public String state;
-
+    private ArrayList<String> pathfiles;
     private ArrayList<Track> queue = new ArrayList<>();
     private ArrayList<Track> recentTracks = new ArrayList<>(5);
     private ArrayList<Album> recentAlbums= new ArrayList<>(5);;
@@ -66,18 +66,7 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
                 return false;
             }
         });
-//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-//            AudioAttributes aa = null;
-//            aa = new AudioAttributes.Builder()
-//                    .setUsage(AudioAttributes.USAGE_MEDIA)
-//                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-//                    .build();
-//            mp.setAudioAttributes(aa);
-//        }
-//        else   {
-//
-//            mp.setAudioStreamType(AudioManager.STREAM_ALARM);
-//        }
+
         mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mp.setOnCompletionListener(this);
         mp.reset();
@@ -144,8 +133,10 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         this.pointer = position;
     }
 
-    public void play(String s) {
+    public void play(ArrayList<String> pathfiles, int pos) {
         System.out.println("play");
+        this.pathfiles=pathfiles;
+        String s = pathfiles.get(pos);
         System.out.println(s);
         addTrack();
 
@@ -169,19 +160,17 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-
     }
 
     public void nextTrack() {
-//        if (state == StringsValues.PLAY) {
-//            if (pointer + 1 > getLenghtQueue()) return;
-//            pointer++;
-//            play(torrent.getFileNames()[trackInfo.track_number]);
-//        }
+        if (state == StringsValues.PLAY) {
+            if (pointer + 1 > getLenghtQueue()) return;
+            pointer++;
+//            play();
+        }
 
     }
+
 
     public void previousTrack() {
 //        if(state==StringsValues.PLAY) {

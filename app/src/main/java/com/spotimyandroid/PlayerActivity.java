@@ -69,6 +69,7 @@ public class PlayerActivity extends AppCompatActivity implements TorrentListener
     private ArrayList<File> torrentFiles;
     private int fileSelected;
     private boolean flag = true;
+    private ArrayList<String> pathfiles;
 
 
     @Override
@@ -96,14 +97,6 @@ public class PlayerActivity extends AppCompatActivity implements TorrentListener
                             myTorrents=myTorrentsFound;
 
                             search(myTorrents, index=0);
-//                            TorrentOptions torrentOptions = new TorrentOptions.Builder()
-//                                    .saveLocation(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS))
-//                                    .removeFilesAfterStop(true)
-//                                    .build();
-//
-//                            torrentStream = TorrentStream.init(torrentOptions);
-//                            torrentStream.addListener(PlayerActivity.this);
-//                            torrentStream.startStream(myTorrents.get(0).getMagnet());
                         }
 
                         @Override
@@ -200,7 +193,7 @@ public class PlayerActivity extends AppCompatActivity implements TorrentListener
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                app.nextTrack();
+                torrentStream.getCurrentTorrent()
             }
         });
         previous.setOnClickListener(new View.OnClickListener() {
@@ -314,9 +307,14 @@ public class PlayerActivity extends AppCompatActivity implements TorrentListener
 
     @Override
     public void onStreamStarted(Torrent torrent) {
-        app.play(Environment.getExternalStorageDirectory()
-                +"/Download/"+
-                torrent.getTorrentHandle().getTorrentInfo().files().filePath(fileSelected));
+        ArrayList<String> p = new ArrayList<>();
+        for(int i=0; i < torrent.getTorrentHandle().getTorrentInfo().numFiles();i++){
+            p.add(Environment.getExternalStorageDirectory()
+                    +"/Download/"+
+                    torrent.getTorrentHandle().getTorrentInfo().files().filePath(i));
+        }
+
+        app.play(p, fileSelected);
     }
 
     @Override
@@ -328,6 +326,9 @@ public class PlayerActivity extends AppCompatActivity implements TorrentListener
     public void onStreamReady(Torrent torrent) {
 //        fileSelected = isPresent(torrent, trackInfo);
 //        app.play(torrentFiles.get(fileSelected).getAbsolutePath());
+//        app.play(Environment.getExternalStorageDirectory()
+//                +"/Download/"+
+//                torrent.getTorrentHandle().getTorrentInfo().files().filePath(fileSelected));
     }
 
     private int isPresent(List<String> paths, Track track) {
