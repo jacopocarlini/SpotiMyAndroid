@@ -41,8 +41,9 @@ public class ProfileActivity extends AppCompatActivity {
         System.out.println("oncreate");
         app = (ApplicationSupport) this.getApplication();
         mediaPlayer=app.getMP();
-        if(app.oldqueue==null) tracks = app.getQueue();
-        else tracks = app.oldqueue;
+        tracks = (ArrayList<MyTrack>) app.getQueue().clone();
+//        if(app.oldqueue==null) tracks = (ArrayList<MyTrack>) app.getQueue().clone();
+//        else tracks = app.oldqueue;
         initview();
     }
 
@@ -107,13 +108,13 @@ public class ProfileActivity extends AppCompatActivity {
             queue.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    System.out.println(tracks.size());
+//                    System.out.println(tracks.size());
                     if (!app.getQueue().contains(tracks.get(finalI))) {
                         app.addQueue(tracks.get(finalI));
                         queue.setImageResource(R.drawable.ic_library_books_white_24dp);
                         queue.setColorFilter(getResources().getColor(R.color.blue));
                     } else {
-                        app.oldqueue= (ArrayList<MyTrack>) tracks.clone();
+//                        app.oldqueue= (ArrayList<MyTrack>) tracks.clone();
                         app.removeQueue(tracks.get(finalI));
                         queue.setImageResource(R.drawable.ic_queue_white_24dp);
                         queue.setColorFilter(getResources().getColor(R.color.white));
