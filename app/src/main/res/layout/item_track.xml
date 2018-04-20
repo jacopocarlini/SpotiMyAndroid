@@ -32,6 +32,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:maxLength="30"
+
                 android:maxLines="1"
                 android:text="name"
                 android:textAlignment="viewStart"
@@ -78,6 +79,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:padding="8dp"
                 android:tint="@color/white"
                 app:srcCompat="@drawable/ic_playlist_add_black_24dp" />
 
@@ -85,7 +87,7 @@
                 android:id="@+id/download"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:padding="8dp"
                 android:tint="@color/white"
                 app:srcCompat="@drawable/ic_file_download_black_24dp" />
 
@@ -93,7 +95,7 @@
                 android:id="@+id/queue"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:padding="8dp"
                 app:srcCompat="@drawable/ic_queue_white_24dp" />
 
         </LinearLayout>

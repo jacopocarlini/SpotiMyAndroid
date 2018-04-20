@@ -45,6 +45,7 @@ public class MyTrack implements Parcelable {
         cover = track.album.images.get(0).url;
         id = track.id;
         artistid=track.artists.get(0).id;
+        albumid=track.album.id;
     }
     public MyTrack(TrackSimple track) {
         name = track.name;
@@ -84,6 +85,7 @@ public class MyTrack implements Parcelable {
             MyTrack myTrack = new MyTrack(tracks.get(i));
             myTrack.setAlbumid(album.id);
             myTrack.setCover(album.images.get(0).url);
+            myTrack.setAlbumid(album.id);
             myTracks.add(myTrack);
         }
         return myTracks;

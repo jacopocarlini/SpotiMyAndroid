@@ -36,6 +36,7 @@ public class LoginActivity  extends AppCompatActivity{
         AuthenticationRequest request = builder.build();
 
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
+
 //        SharedPreferences.Editor prefEditor = getSharedPreferences("recent", Context.MODE_PRIVATE).edit();
 //        prefEditor.putString("artists", "");
 //        prefEditor.putString("tracks", "");

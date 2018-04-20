@@ -31,15 +31,15 @@ public class MyAlbum implements Parcelable {
         cover = album.images.get(0).url;
     }
 
-    public MyAlbum() {
-
+    public MyAlbum(Album album) {
+        name = album.name;
+        id = album.id;
+        cover = album.images.get(0).url;
     }
 
-    public MyAlbum(String albumid, String album, String artist, String cover) {
-        name = album;
-        id = albumid;
-        this.artist = artist;
-        this.cover = cover;
+
+    public MyAlbum() {
+
     }
 
 

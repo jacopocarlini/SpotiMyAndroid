@@ -26,6 +26,7 @@ import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Album;
 import kaaes.spotify.webapi.android.models.AlbumSimple;
 import kaaes.spotify.webapi.android.models.Artist;
+import kaaes.spotify.webapi.android.models.TrackSimple;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -52,6 +53,7 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     private String token;
     private AlbumSimple album;
     public SpotifyService spotify;
+    public ArrayList<MyTrack> oldqueue;
 
 
     public void prepare(){
@@ -220,26 +222,38 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     }
 
     public void addTrack(){
-        if(recentTracks.contains(getCurrentTrack())){
-          return;
-        }
+        spotify.getAlbum(getCurrentTrack().getAlbumid(), new Callback<Album>() {
+            @Override
+            public void success(Album album, Response response) {
+                System.out.println("successo");
+                if(recentTracks.contains(getCurrentTrack())){
+                    return;
+                }
 
-        if(recentTracks.size()==5){
-            recentTracks.remove(0);
-            recentTracks.add(getCurrentTrack());
-        }
-        else recentTracks.add(getCurrentTrack());
-        String str="";
-        for(int i= recentTracks.size()-1; i>=0 ; i--) {
-            MyTrack t=recentTracks.get(i);
-            if(i==recentTracks.size()-1) str= str.concat(t.toString());
-            else str=str.concat(",,,"+t.toString());
-        }
-        SharedPreferences.Editor prefEditor = getSharedPreferences("recent", Context.MODE_PRIVATE).edit();
-        prefEditor.putString("tracks", str);
-        prefEditor.commit();
-        addAlbum(new MyAlbum(getCurrentTrack().getAlbumid(), getCurrentTrack().getAlbum(),
-                getCurrentTrack().getArtist(), getCurrentTrack().getCover()));
+                if(recentTracks.size()==5){
+                    recentTracks.remove(0);
+                    recentTracks.add(getCurrentTrack());
+                }
+                else recentTracks.add(getCurrentTrack());
+                String str="";
+                for(int i= recentTracks.size()-1; i>=0 ; i--) {
+                    MyTrack t=recentTracks.get(i);
+                    if(i==recentTracks.size()-1) str= str.concat(t.toString());
+                    else str=str.concat(",,,"+t.toString());
+                }
+                SharedPreferences.Editor prefEditor = getSharedPreferences("recent", Context.MODE_PRIVATE).edit();
+                prefEditor.putString("tracks", str);
+                prefEditor.commit();
+                System.out.println(str);
+                addAlbum(new MyAlbum(album));
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                System.out.println(error);
+            }
+        });
+
 
 
     }
@@ -265,12 +279,13 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
                 SharedPreferences.Editor prefEditor = getSharedPreferences("recent", Context.MODE_PRIVATE).edit();
                 prefEditor.putString("albums", str);
                 prefEditor.commit();
-                addArtist(new MyArtist(getCurrentTrack().getArtist(), getCurrentTrack().getArtistid(), artist.images.get(0).url));
+                System.out.println(str);
+                addArtist(new MyArtist(artist));
             }
 
             @Override
             public void failure(RetrofitError error) {
-
+                System.out.println(error);
             }
         });
 
@@ -342,4 +357,13 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     public AlbumSimple getAlbum() {
         return album;
     }
+
+    public void addQueue(MyTrack myTrack) {
+        queue.add(myTrack);
+    }
+
+    public void removeQueue(MyTrack myTrack) {
+        queue.remove(myTrack);
+    }
+
 }

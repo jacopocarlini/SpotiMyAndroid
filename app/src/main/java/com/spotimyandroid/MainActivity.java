@@ -5,12 +5,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.graphics.ColorFilter;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -30,6 +35,7 @@ import com.spotimyandroid.utils.ApplicationSupport;
 import com.spotimyandroid.utils.BottomNavigationViewHelper;
 import com.spotimyandroid.utils.StringsValues;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView player;
     private BroadcastReceiver mReceiver;
     private ImageButton pause;
+    private ArrayList<MyTrack> tracks;
 
 
     @Override
@@ -99,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         player();
+        setIcons();
         registerReceiver(mReceiver, new IntentFilter(StringsValues.BROADCAST_PLAY));
     }
 
@@ -150,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences sharedPref = getSharedPreferences( "recent", Context.MODE_PRIVATE );
         String s = sharedPref.getString("tracks", "");
-        System.out.println(s);
+        System.out.println("stringa trovata "+s);
         app.addRecentTracks(MyTrack.toArray(s));
         addElemToTracksView(MyTrack.toArray(s));
 
@@ -237,7 +245,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void success(TracksPager tracksPager, Response response) {
-                addElemToTracksView(MyTrack.toArray(tracksPager.tracks.items));
+                tracks= (ArrayList<MyTrack>) MyTrack.toArray(tracksPager.tracks.items);
+                addElemToTracksView(tracks);
                 app.spotify.searchArtists(query, options, new SpotifyCallback<ArtistsPager>() {
                     @Override
                     public void failure(SpotifyError spotifyError) {
@@ -266,6 +275,38 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    private void setIcons(){
+        int count = tracksView.getChildCount();
+        View elem = null;
+        for(int i=0; i<count; i++) {
+            elem = tracksView.getChildAt(i);
+            final ImageView queue = elem.findViewById(R.id.queue);
+            if(app.getQueue()==null || tracks==null) return;
+            if (app.getQueue().contains(tracks.get(i))) {
+                queue.setImageResource(R.drawable.ic_library_books_white_24dp);
+                queue.setColorFilter(getResources().getColor(R.color.blue));
+            } else {
+                queue.setImageResource(R.drawable.ic_queue_white_24dp);
+            }
+            final int finalI = i;
+            queue.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (!app.getQueue().contains(tracks.get(finalI))) {
+                        app.addQueue(tracks.get(finalI));
+                        queue.setImageResource(R.drawable.ic_library_books_white_24dp);
+                        queue.setColorFilter(getResources().getColor(R.color.blue));
+                    } else {
+                        app.removeQueue(tracks.get(finalI));
+                        queue.setImageResource(R.drawable.ic_queue_white_24dp);
+                        queue.setColorFilter(getResources().getColor(R.color.white));
+                    }
+                }
+            });
+        }
+
+    }
+
     private void addElemToTracksView(final List<MyTrack> tracks) {
         tracksView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -290,6 +331,7 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intent);
                 }
             });
+
             tracksView.addView(elem);
         }
     }

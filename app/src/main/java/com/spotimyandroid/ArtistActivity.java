@@ -108,27 +108,6 @@ public class ArtistActivity extends AppCompatActivity {
         findAlbums();
         findTracks();
 
-        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottombar);
-        BottomNavigationViewHelper.disableShiftMode(bottomNavigationView);
-        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                if (item.getItemId() == R.id.home) {
-                    return true;
-                }
-                if (item.getItemId() == R.id.settings) {
-                    Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-                    startActivity(intent);
-                    return true;
-                }
-                if (item.getItemId() == R.id.profile) {
-                    Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
-                    startActivity(intent);
-                    return true;
-                }
-                return false;
-            }
-        });
 
         setBottomBar();
         player();

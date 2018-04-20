@@ -12,6 +12,7 @@
         android:id="@+id/position"
         android:layout_width="25dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:text="1"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
@@ -22,12 +23,45 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:text="Stairway to Heaven"
+        android:layout_marginTop="8dp"
+        android:maxLength="20"
         android:maxLines="1"
-        android:maxLength="30"
+        android:text="Stairway to Heaven"
         android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@+id/position"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:id="@+id/playlist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="8dp"
+            android:tint="@color/white"
+            app:srcCompat="@drawable/ic_playlist_add_black_24dp" />
+
+        <ImageView
+            android:id="@+id/download"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:tint="@color/white"
+            app:srcCompat="@drawable/ic_file_download_black_24dp" />
+
+        <ImageView
+            android:id="@+id/queue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            app:srcCompat="@drawable/ic_queue_white_24dp" />
+
+    </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

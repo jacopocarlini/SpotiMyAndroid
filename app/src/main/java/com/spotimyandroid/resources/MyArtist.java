@@ -23,7 +23,7 @@ public class MyArtist implements Parcelable {
     private String image;
     private String id;
 
-    private MyArtist(Artist artist) {
+    public MyArtist(Artist artist) {
         name = artist.name;
         id = artist.id;
         if(artist.images.size()>0)

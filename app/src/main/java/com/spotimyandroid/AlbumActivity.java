@@ -43,7 +43,7 @@ public class AlbumActivity extends AppCompatActivity{
     private List<TrackSimple> tracks;
     private MyAlbum albumInfo;
     private ImageView cover;
-    private ApplicationSupport as;
+    private ApplicationSupport app;
     private MediaPlayer mediaPlayer;
     private BroadcastReceiver mReceiverPlay;
     private ImageView pause;
@@ -54,11 +54,11 @@ public class AlbumActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_album);
-        as = (ApplicationSupport) this.getApplication();
+        app = (ApplicationSupport) this.getApplication();
         Intent intent = getIntent();
         albumInfo = intent.getParcelableExtra("album");
-        mediaPlayer = as.getMP();
-        as.spotify.getAlbum(albumInfo.getId(), new Callback<Album>() {
+        mediaPlayer = app.getMP();
+        app.spotify.getAlbum(albumInfo.getId(), new Callback<Album>() {
             @Override
             public void success(Album album1, Response response) {
                 album = album1;
@@ -95,6 +95,7 @@ public class AlbumActivity extends AppCompatActivity{
     protected void onResume() {
         super.onResume();
         player();
+        setIcons();
         registerReceiver(mReceiverPlay, new IntentFilter(StringsValues.BROADCAST_PLAY));
     }
 
@@ -124,13 +125,15 @@ public class AlbumActivity extends AppCompatActivity{
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
-                    as.newQueue(MyTrack.toArraySimple(tracks, album));
-                    as.setPosition(finalI);
+                    app.newQueue(MyTrack.toArraySimple(tracks, album));
+                    app.setPosition(finalI);
 
                     intent.putExtra("action","play");
                     startActivity(intent);
                 }
             });
+            final ImageView queue = elem.findViewById(R.id.queue);
+
             tracksView.addView(elem);
 
         }
@@ -139,36 +142,50 @@ public class AlbumActivity extends AppCompatActivity{
         if (albumInfo.hasCover())
             Glide.with(this).load(albumInfo.getCover()).into(cover);
 
-        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottombar);
-        BottomNavigationViewHelper.disableShiftMode(bottomNavigationView);
-        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                if (item.getItemId() == R.id.home) {
-                    return true;
-                }
-                if (item.getItemId() == R.id.settings) {
-                    Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-                    startActivity(intent);
-                    return true;
-                }
-                if (item.getItemId() == R.id.profile) {
-                    Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
-                    startActivity(intent);
-                    return true;
-                }
-                return false;
-            }
-        });
 
         setBottomBar();
         player();
 
     }
 
+    private void setIcons(){
+        if(tracks==null || album==null) return;
+        final List<MyTrack> tracks1= MyTrack.toArraySimple(tracks, album);
+        int count = tracksView.getChildCount();
+        View elem = null;
+        for(int i=0; i<count; i++) {
+            elem = tracksView.getChildAt(i);
+            final ImageView queue = elem.findViewById(R.id.queue);
+            if (app.getQueue().contains(tracks.get(i))) {
+                queue.setImageResource(R.drawable.ic_library_books_white_24dp);
+                queue.setColorFilter(getResources().getColor(R.color.blue));
+            } else {
+                queue.setImageResource(R.drawable.ic_queue_white_24dp);
+            }
+            final int finalI = i;
+            queue.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (!app.getQueue().contains(tracks.get(finalI))) {
+                        app.addQueue(tracks1.get(finalI));
+                        queue.setImageResource(R.drawable.ic_library_books_white_24dp);
+                        queue.setColorFilter(getResources().getColor(R.color.blue));
+                    } else {
+                        app.removeQueue(tracks1.get(finalI));
+                        queue.setImageResource(R.drawable.ic_queue_white_24dp);
+                        queue.setColorFilter(getResources().getColor(R.color.white));
+                    }
+                }
+            });
+        }
+
+    }
+
+
+
     public void player(){
         LinearLayout playerBar = (LinearLayout) findViewById(R.id.playerBar);
-        if(as.state== StringsValues.PLAY) playerBar.setVisibility(View.VISIBLE);
+        if(app.state== StringsValues.PLAY) playerBar.setVisibility(View.VISIBLE);
         else playerBar.setVisibility(View.INVISIBLE);
         pause=(ImageButton) findViewById(R.id.pause);
         if(mediaPlayer!=null && mediaPlayer.isPlaying()) {
@@ -184,7 +201,7 @@ public class AlbumActivity extends AppCompatActivity{
                     pause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
                     mediaPlayer.pause();
                 }
-                else if(as.getLenghtQueue()>0){
+                else if(app.getLenghtQueue()>0){
                     pause.setImageResource(R.drawable.ic_pause_black_24dp);
                     mediaPlayer.start();
                 }
@@ -196,13 +213,13 @@ public class AlbumActivity extends AppCompatActivity{
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                as.nextTrack();
+                app.nextTrack();
             }
         });
         previous.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                as.previousTrack();
+                app.previousTrack();
             }
         });
 
