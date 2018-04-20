@@ -1,24 +1,21 @@
 package com.spotimyandroid;
 
-import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -27,13 +24,15 @@ import android.widget.SearchView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.google.gson.Gson;
+import com.spotimyandroid.http.Api;
+import com.spotimyandroid.resources.MyTrack;
 import com.spotimyandroid.utils.ApplicationSupport;
 import com.spotimyandroid.utils.BottomNavigationViewHelper;
 import com.spotimyandroid.utils.StringsValues;
 
-import java.io.IOException;
-import java.util.ArrayList;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +42,7 @@ import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyCallback;
 import kaaes.spotify.webapi.android.SpotifyError;
 import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Album;
 import kaaes.spotify.webapi.android.models.AlbumSimple;
 import kaaes.spotify.webapi.android.models.AlbumsPager;
 import kaaes.spotify.webapi.android.models.Artist;
@@ -81,13 +81,8 @@ public class MainActivity extends AppCompatActivity {
         SpotifyApi api = new SpotifyApi();
         api.setAccessToken(app.getToken());
         spotify = api.getService();
-        app.setSpotify(spotify);
 
         mediaPlayer = app.getMP();
-//        SharedPreferences.Editor prefEditor = getSharedPreferences("recent", Context.MODE_PRIVATE).edit();
-//        prefEditor.putString("tracks", "");
-//        prefEditor.commit();
-
         initview();
 
         mReceiver = new BroadcastReceiver() {
@@ -104,9 +99,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
-
-
-
     }
 
 
@@ -114,12 +106,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
-        }
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
-        }
         player();
         registerReceiver(mReceiver, new IntentFilter(StringsValues.BROADCAST_PLAY));
     }
@@ -180,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-//        recent();
+        recent();
         player();
 
     }
@@ -194,15 +180,11 @@ public class MainActivity extends AppCompatActivity {
         textAlbums.setText(R.string.recent_albums);
         textArtists.setText(R.string.recent_artists);
 
-//        SharedPreferences sharedPref = getSharedPreferences( "recent", Context.MODE_PRIVATE );
-//        Gson gson = new Gson();
+        SharedPreferences sharedPref = getSharedPreferences( "recent", Context.MODE_PRIVATE );
+        String s = sharedPref.getString("tracks", "");
+//        app.addRecentTracks(Track.toArray(s));
+//        addElemToTracksView(Track.toArray(s));
 //
-//        String json = sharedPref.getString("tracks", "");
-////        System.out.println(json);
-//        ArrayList<Track> tracks = gson.fromJson(json, ArrayList.class);
-//        app.addRecentTracks(tracks);
-//        addElemToTracksView(tracks);
-
 //        String a = sharedPref.getString("albums", "");
 //        app.addRecentAlbums(Album.toArray(a));
 //        addElemToAlbumsView(Album.toArray(a));
@@ -259,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
-                intent.putExtra("info","openonly");
+                intent.putExtra("action","openonly");
                 startActivity(intent);
             }
         });
@@ -286,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void success(TracksPager tracksPager, Response response) {
-                addElemToTracksView(tracksPager.tracks.items);
+                addElemToTracksView(MyTrack.toArray(tracksPager.tracks.items));
                 spotify.searchArtists(query, options, new SpotifyCallback<ArtistsPager>() {
                     @Override
                     public void failure(SpotifyError spotifyError) {
@@ -315,27 +297,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void addElemToTracksView(final List<Track> tracks) {
+    private void addElemToTracksView(final List<MyTrack> tracks) {
         tracksView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         for (int i =0 ;i<tracks.size();i++){
             View elem = inflater.inflate(R.layout.item_track, null);
             TextView name = (TextView) elem.findViewById(R.id.name);
-            name.setText(tracks.get(i).name);
+            name.setText(tracks.get(i).getName());
             TextView artist = (TextView) elem.findViewById(R.id.artist);
-            artist.setText(tracks.get(i).artists.get(0).name);
+            artist.setText(tracks.get(i).getArtist());
             TextView album = (TextView) elem.findViewById(R.id.album);
-            album.setText(tracks.get(i).album.name);
+            album.setText(tracks.get(i).getAlbum());
             final int finalI = i;
             elem.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
                     if(!tracks.get(finalI).equals(app.getCurrentTrack())) {
-                        app.newQueue(tracks.toArray(new Track[tracks.size()]));
+                        app.newQueue(tracks);
                     }
                     app.setPosition(finalI);
-                    intent.putExtra("info","play");
+                    intent.putExtra("action","play");
                     startActivity(intent);
                 }
             });
@@ -384,7 +366,8 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), AlbumActivity.class);
-                    intent.putExtra("album", albums.get(finalI));
+                    app.setAlbum(albums.get(finalI));
+//                    intent.putExtra("album", albums.get(finalI));
                     startActivity(intent);
                 }
             });

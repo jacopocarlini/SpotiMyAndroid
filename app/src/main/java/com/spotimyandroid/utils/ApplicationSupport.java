@@ -8,27 +8,26 @@ import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Environment;
-import android.os.Parcel;
 
-import com.google.gson.Gson;
+import com.spotimyandroid.http.Api;
 import com.spotimyandroid.http.ApiHelper;
+import com.spotimyandroid.resources.MyTrack;
 
-import java.io.File;
-import java.io.FileInputStream;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
-import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Album;
+import kaaes.spotify.webapi.android.models.AlbumSimple;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.Track;
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import kaaes.spotify.webapi.android.models.TrackSimple;
 
 import static com.spotimyandroid.utils.StringsValues.BROADCAST_NEXT;
 import static com.spotimyandroid.utils.StringsValues.BROADCAST_PLAY;
@@ -45,17 +44,15 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     private int pointer=0;
     public String state;
 
-    private ArrayList<Track> queue = new ArrayList<>();
-    private ArrayList<Track> recentTracks = new ArrayList<>(5);
+    private ArrayList<MyTrack> queue = new ArrayList<>();
+    private ArrayList<MyTrack> recentTracks = new ArrayList<>(5);
     private ArrayList<Album> recentAlbums= new ArrayList<>(5);;
     private ArrayList<Artist> recentArtists= new ArrayList<>(5);;
     private String token;
-    private ApiHelper apiHelper;
-    private SpotifyService spotify;
+    private AlbumSimple album;
 
 
     public void prepare(){
-        apiHelper =new ApiHelper(getApplicationContext());
         mp = new MediaPlayer();
         mp.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
@@ -66,19 +63,19 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
                 return false;
             }
         });
-//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-//            AudioAttributes aa = null;
-//            aa = new AudioAttributes.Builder()
-//                    .setUsage(AudioAttributes.USAGE_MEDIA)
-//                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-//                    .build();
-//            mp.setAudioAttributes(aa);
-//        }
-//        else   {
-//
-//            mp.setAudioStreamType(AudioManager.STREAM_ALARM);
-//        }
-        mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            AudioAttributes aa = null;
+            aa = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build();
+            mp.setAudioAttributes(aa);
+        }
+        else   {
+
+            mp.setAudioStreamType(AudioManager.STREAM_ALARM);
+        }
+
         mp.setOnCompletionListener(this);
         mp.reset();
 
@@ -97,7 +94,7 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         mp.reset();
         if ( (++pointer < queue.size())) {
             state=StringsValues.DOWNLOADING;
-            Track track = queue.get(pointer);
+            MyTrack track = queue.get(pointer);
             try {
                 Intent i = new Intent(BROADCAST_NEXT);
                 i.putExtra("next_track", true);
@@ -125,17 +122,18 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         return queue.size();
     }
 
-    public Track getCurrentTrack(){
+    public MyTrack getCurrentTrack(){
         if(pointer<0 || pointer>=queue.size()) return null;
         return  queue.get(pointer);
     }
 
-    public void newQueue(Track[] tracks) {
-        queue = new ArrayList<>(Arrays.asList(tracks));
+    public void newQueue(List<MyTrack> tracks) {
+        queue = new ArrayList<>();
+        queue.addAll(tracks);
         pointer=0;
     }
 
-    public ArrayList<Track> getQueue() {
+    public ArrayList<MyTrack> getQueue() {
         return queue;
     }
 
@@ -144,51 +142,75 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         this.pointer = position;
     }
 
-    public void play(String s) {
+    public void play() {
         System.out.println("play");
-        System.out.println(s);
         addTrack();
-
 
         if (mp.isPlaying()) mp.stop();
         mp.reset();
+        state=StringsValues.DOWNLOADING;
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "audio/mp3"); // change content type if necessary
+        headers.put("Accept-Ranges", "bytes");
+        headers.put("Status", "206");
+        headers.put("Cache-control", "no-cache");
+        ApiHelper apiHelper = new ApiHelper(getApplicationContext());
+        apiHelper.findTracks(getCurrentTrack().getArtist() + " " + getCurrentTrack().getName(), new ApiHelper.onMusicCallback() {
+            @Override
+            public void onSuccess(String url) {
+                try {
+                    System.out.println(url);
+                    mp.setDataSource(url);
+                    System.out.println("setDatasource");
+                    mp.prepare();
+                    //mp3 will be started after completion of preparing...
+//                    mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+//
+//                        @Override
+//                        public void onPrepared(MediaPlayer player) {
+//                            System.out.println("preparate");
+//                            player.start();
+//                            state=StringsValues.PLAY;
+//                            Intent i = new Intent(BROADCAST_PLAY);
+//                            i.putExtra("next_track", true);
+//                            sendBroadcast(i);
+//                        }
+//
+//                    });
+                    System.out.println("preparate");
+                    mp.start();
+                    state=StringsValues.PLAY;
+                    Intent i = new Intent(BROADCAST_PLAY);
+                    i.putExtra("next_track", true);
+                    sendBroadcast(i);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
 
-        try {
-            System.out.println(s);
-            mp.setDataSource(s);
-            mp.prepare();
-            System.out.println("setDatasource");
-            //mp3 will be started after completion of preparing...
+            }
 
-            System.out.println("preparate");
-            mp.start();
-            state=StringsValues.PLAY;
-            Intent i = new Intent(BROADCAST_PLAY);
-            i.putExtra("next_track", true);
-            sendBroadcast(i);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            @Override
+            public void onError(String error) {
 
-
-
+            }
+        });
     }
 
     public void nextTrack() {
-//        if (state == StringsValues.PLAY) {
-//            if (pointer + 1 > getLenghtQueue()) return;
-//            pointer++;
-//            play(torrent.getFileNames()[trackInfo.track_number]);
-//        }
+        if (state == StringsValues.PLAY) {
+            if (pointer + 1 > getLenghtQueue()) return;
+            pointer++;
+            play();
+        }
 
     }
 
     public void previousTrack() {
-//        if(state==StringsValues.PLAY) {
-//            if (pointer - 1 < 0) return;
-//            pointer--;
-//            play(torrent.getFileNames()[trackInfo.track_number]);
-//        }
+        if(state==StringsValues.PLAY) {
+            if (pointer - 1 < 0) return;
+            pointer--;
+            play();
+        }
     }
 
     public int getPosition() {
@@ -199,25 +221,37 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         if(recentTracks.contains(getCurrentTrack())){
           return;
         }
-        if(recentTracks.size()==5){
-            recentTracks.remove(0);
-            recentTracks.add(getCurrentTrack());
-        }
-        else recentTracks.add(getCurrentTrack());
-        SharedPreferences.Editor prefEditor = getSharedPreferences("recent", Context.MODE_PRIVATE).edit();
-        Gson gson = new Gson();
-        String json = gson.toJson(recentTracks);
-        prefEditor.putString("tracks", json);
-        prefEditor.commit();
-
-
+//        server = new Api(getApplicationContext());
+//        server.findArtist(getCurrentTrack().getArtist(), new Api.VolleyCallback() {
+//            @Override
+//            public void onSuccess(JSONObject result) {
+//                getCurrentTrack().addArtistImage(result);
+//                System.out.println("attualmente ci sono "+recentTracks.size()+ " tracce recenti");
+//                if(recentTracks.size()==5){
+//                    recentTracks.remove(0);
+//                    recentTracks.add(getCurrentTrack());
+//                }
+//                else recentTracks.add(getCurrentTrack());
+//                String str="";
+//                for(int i= recentTracks.size()-1; i>=0 ; i--) {
+//                    Track t=recentTracks.get(i);
+//                    if(i==recentTracks.size()-1) str= str.concat(t.toString());
+//                    else str=str.concat(",,,"+t.toString());
+//                }
+//                System.out.println("salvo la stringa "+str);
+//                SharedPreferences.Editor prefEditor = getSharedPreferences("recent", Context.MODE_PRIVATE).edit();
+//                prefEditor.putString("tracks", str);
+//                prefEditor.commit();
+//                addAlbum(new Album(getCurrentTrack().getAlbumid(), getCurrentTrack().getAlbum(),
+//                            getCurrentTrack().getArtist(), getCurrentTrack().getCover()));
+//            }
+//        });
 
 
     }
 
     public void addAlbum(final Album info) {
         if(recentAlbums.contains(info)) return;
-
 //        server = new Api(getApplicationContext());
 //        server.findArtist(info.getArtist(), new Api.VolleyCallback() {
 //            @Override
@@ -269,8 +303,12 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         prefEditor.commit();
     }
 
-    public void addRecentTracks(List<Track> tracks) {
-        recentTracks.addAll(tracks);
+    public void addRecentTracks(MyTrack[] tracks) {
+        for (MyTrack track: tracks) {
+            if(!recentTracks.contains(track)){
+                recentTracks.add(track);
+            }
+        }
     }
 
     public void addRecentAlbums(Album[] albums) {
@@ -299,7 +337,11 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     }
 
 
-    public void setSpotify(SpotifyService spotify) {
-        this.spotify = spotify;
+    public void setAlbum(AlbumSimple album) {
+        this.album = album;
+    }
+
+    public AlbumSimple getAlbum() {
+        return album;
     }
 }

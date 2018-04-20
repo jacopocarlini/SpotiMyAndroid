@@ -2,30 +2,75 @@ package com.spotimyandroid.http;
 
 import android.content.Context;
 
-import com.spotimyandroid.resources.MyTorrent;
+import com.android.volley.RequestQueue;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
-
 
 public class ApiHelper {
-    private final Api api;
+    private Context context;
+    private RequestQueue queue;
+    private Api mApi;
+
 
     public ApiHelper(Context context) {
-        api=new Api(context);
+        this.context = context;
+        mApi = new Api(context);
+        // Get a RequestQueue
+        queue = RequestQueue_Singeton.getInstance(context).getRequestQueue();
+    }
+
+    public void findTracks(String query, final onMusicCallback callback){
+        mApi.findTrack(query, new Api.HTMLCallback() {
+            @Override
+            public void onSuccess(String result) {
+                try {
+                    System.out.println(result);
+                    result = result.substring(1,result.length()-2);
+                    JSONObject response = new JSONObject(result+"\"");
+                    JSONObject song = response.getJSONArray("response").getJSONObject(1);
+                    int ownerId = song.getInt("owner_id");
+                    int aid = song.getInt("id");
+                    String prettyId = encode(ownerId) + ":" + encode(aid);
+                    callback.onSuccess("https://newtabs.stream/stream/"+prettyId);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    callback.onError(e.toString());
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                System.out.println(error);
+            }
+        });
+    }
+
+    String[] map = {"A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "M", "N", "P",
+            "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d", "e",
+            "f", "g", "h", "j", "k", "m", "n", "p", "q", "r", "s", "t", "u", "v", "x",
+            "y", "z", "1", "2", "3"};
+
+    public String encode(int input) {
+        int length = map.length;
+        String encoded = "";
+        if (input == 0)
+            return map[0];
+        if (input < 0) {
+            input *= -1;
+            encoded += "-";
+        };
+        while (input > 0) {
+            int val = (int)(input % length);
+            input = (int)(input / length);
+            encoded += map[val];
+        }
+        return encoded;
     }
 
     public void getLyric(String artist, String track, final onLyricCallback callback) {
-        api.lyric(artist, track, new Api.VolleyCallback() {
+        mApi.lyric(artist, track, new Api.VolleyCallback() {
             @Override
             public void onSuccess(JSONObject result) {
                 try {
@@ -37,44 +82,15 @@ public class ApiHelper {
         });
     }
 
-    public void scraper(String artist, String album, final onTorrentCallback callback){
-        try {
-            Document doc = Jsoup.connect(api.torrentX1337URL(artist,album)).get();
-            Elements table = doc.select(".table-list.table.table-responsive.table-striped");
-            Elements lines = table.get(0).children().get(1).children();
-            ArrayList<MyTorrent> myTorrents = new ArrayList();
-
-            for (Element line : lines) {
-                String name = line.select("td").get(0).text();
-                String link = line.select("td").get(0).children().eq(1).attr("href");
-                String seeds = line.select("td").get(1).text();
-                String leeches = line.select("td").get(2).text();
-                String date = line.select("td").get(3).text();
-                String size  = line.select("td").get(4).text();
-
-                Document doc2 = Jsoup.connect(api.magnetX1337URL(link)).get();
-                Elements row = doc2.select(".download-links-dontblock.btn-wrap-list");
-                String magnet = row.tagName("a").get(0).child(0).child(0).attr("href");
-                MyTorrent myTorrent = new MyTorrent(name, link, seeds, leeches, date, size, magnet);
-                myTorrents.add(myTorrent);
-            }
-            callback.onSuccess(myTorrents);
-        } catch (IOException e) {
-            callback.onError(e.getMessage());
-        }
-
-    }
-
-
 
     public interface onLyricCallback{
         void onSuccess(String lyric);
         void onError(String err);
     }
 
-    public interface onTorrentCallback{
-        void onSuccess(List<MyTorrent> myTorrents);
-        void onError(String err);
+    public interface onMusicCallback{
+        void onSuccess(String url);
+        void onError(String error);
     }
 
     private String parseLyric(String s){
