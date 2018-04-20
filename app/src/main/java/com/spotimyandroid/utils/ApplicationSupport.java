@@ -11,6 +11,7 @@ import android.net.Uri;
 
 import com.spotimyandroid.http.Api;
 import com.spotimyandroid.http.ApiHelper;
+import com.spotimyandroid.resources.MyTrack;
 
 import org.json.JSONObject;
 
@@ -23,8 +24,10 @@ import java.util.Map;
 
 
 import kaaes.spotify.webapi.android.models.Album;
+import kaaes.spotify.webapi.android.models.AlbumSimple;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.Track;
+import kaaes.spotify.webapi.android.models.TrackSimple;
 
 import static com.spotimyandroid.utils.StringsValues.BROADCAST_NEXT;
 import static com.spotimyandroid.utils.StringsValues.BROADCAST_PLAY;
@@ -41,11 +44,12 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     private int pointer=0;
     public String state;
 
-    private ArrayList<Track> queue = new ArrayList<>();
-    private ArrayList<Track> recentTracks = new ArrayList<>(5);
+    private ArrayList<MyTrack> queue = new ArrayList<>();
+    private ArrayList<MyTrack> recentTracks = new ArrayList<>(5);
     private ArrayList<Album> recentAlbums= new ArrayList<>(5);;
     private ArrayList<Artist> recentArtists= new ArrayList<>(5);;
     private String token;
+    private AlbumSimple album;
 
 
     public void prepare(){
@@ -90,7 +94,7 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         mp.reset();
         if ( (++pointer < queue.size())) {
             state=StringsValues.DOWNLOADING;
-            Track track = queue.get(pointer);
+            MyTrack track = queue.get(pointer);
             try {
                 Intent i = new Intent(BROADCAST_NEXT);
                 i.putExtra("next_track", true);
@@ -118,17 +122,18 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         return queue.size();
     }
 
-    public Track getCurrentTrack(){
+    public MyTrack getCurrentTrack(){
         if(pointer<0 || pointer>=queue.size()) return null;
         return  queue.get(pointer);
     }
 
-    public void newQueue(Track[] tracks) {
-        queue = new ArrayList<>(Arrays.asList(tracks));
+    public void newQueue(List<MyTrack> tracks) {
+        queue = new ArrayList<>();
+        queue.addAll(tracks);
         pointer=0;
     }
 
-    public ArrayList<Track> getQueue() {
+    public ArrayList<MyTrack> getQueue() {
         return queue;
     }
 
@@ -150,7 +155,7 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         headers.put("Status", "206");
         headers.put("Cache-control", "no-cache");
         ApiHelper apiHelper = new ApiHelper(getApplicationContext());
-        apiHelper.findTracks(getCurrentTrack().artists.get(0).name + " " + getCurrentTrack().name, new ApiHelper.onMusicCallback() {
+        apiHelper.findTracks(getCurrentTrack().getArtist() + " " + getCurrentTrack().getName(), new ApiHelper.onMusicCallback() {
             @Override
             public void onSuccess(String url) {
                 try {
@@ -298,8 +303,8 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         prefEditor.commit();
     }
 
-    public void addRecentTracks(Track[] tracks) {
-        for (Track track: tracks) {
+    public void addRecentTracks(MyTrack[] tracks) {
+        for (MyTrack track: tracks) {
             if(!recentTracks.contains(track)){
                 recentTracks.add(track);
             }
@@ -332,4 +337,11 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     }
 
 
+    public void setAlbum(AlbumSimple album) {
+        this.album = album;
+    }
+
+    public AlbumSimple getAlbum() {
+        return album;
+    }
 }

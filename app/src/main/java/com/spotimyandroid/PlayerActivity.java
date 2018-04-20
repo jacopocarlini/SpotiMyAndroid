@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.spotimyandroid.http.Api;
 import com.spotimyandroid.http.ApiHelper;
+import com.spotimyandroid.resources.MyTrack;
 import com.spotimyandroid.utils.ApplicationSupport;
 import com.spotimyandroid.utils.StringsValues;
 
@@ -45,7 +46,7 @@ public class PlayerActivity extends AppCompatActivity{
     private ImageView cover;
     private MediaPlayer mediaPlayer;
     private Handler handler = new Handler();
-    private Track trackInfo;
+    private MyTrack trackInfo;
     private Api server;
     private ApplicationSupport as;
     private AsyncTask downloadSong;
@@ -68,7 +69,7 @@ public class PlayerActivity extends AppCompatActivity{
         initiview();
 
         Intent i = getIntent();
-        String info = i.getStringExtra("info");
+        String info = i.getStringExtra("action");
         if(!info.equals("openonly")) {
             as.play();
         }
@@ -184,10 +185,10 @@ public class PlayerActivity extends AppCompatActivity{
         lyric = (TextView) findViewById(R.id.lyric);
         lyric.setMovementMethod(new ScrollingMovementMethod());
 
-        track.setText(trackInfo.name);
-        album.setText(trackInfo.album.name);
-        artist.setText(trackInfo.artists.get(0).name);
-        apiHelper.getLyric(trackInfo.artists.get(0).name, trackInfo.name, new ApiHelper.onLyricCallback() {
+        track.setText(trackInfo.getName());
+        album.setText(trackInfo.getAlbum());
+        artist.setText(trackInfo.getArtist());
+        apiHelper.getLyric(trackInfo.getArtist(), trackInfo.getName(), new ApiHelper.onLyricCallback() {
             @Override
             public void onSuccess(String lyricText) {
                 lyric.setText(lyricText);
@@ -200,8 +201,8 @@ public class PlayerActivity extends AppCompatActivity{
         });
 
         cover=(ImageView) findViewById(R.id.cover);
-        if (!trackInfo.album.images.isEmpty()){
-            Glide.with(this).load(trackInfo.album.images.get(0).url).into(cover);
+        if (trackInfo.hasCover()){
+            Glide.with(this).load(trackInfo.getCover()).into(cover);
         }
 
 

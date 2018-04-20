@@ -25,6 +25,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.spotimyandroid.http.Api;
+import com.spotimyandroid.resources.MyTrack;
 import com.spotimyandroid.utils.ApplicationSupport;
 import com.spotimyandroid.utils.BottomNavigationViewHelper;
 import com.spotimyandroid.utils.StringsValues;
@@ -33,6 +34,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -239,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
-                intent.putExtra("info","openonly");
+                intent.putExtra("action","openonly");
                 startActivity(intent);
             }
         });
@@ -266,10 +268,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void success(TracksPager tracksPager, Response response) {
-//                System.out.println(tracksPager.tracks.limit);
-//                System.out.println(tracksPager.tracks.items.size());
-//                System.out.println(tracksPager.tracks.items.get(3));
-                addElemToTracksView(tracksPager.tracks);
+                addElemToTracksView(MyTrack.toArray(tracksPager.tracks.items));
                 spotify.searchArtists(query, options, new SpotifyCallback<ArtistsPager>() {
                     @Override
                     public void failure(SpotifyError spotifyError) {
@@ -278,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void success(ArtistsPager artistsPager, Response response) {
-                        addElemToArtistsView(artistsPager.artists);
+                        addElemToArtistsView(artistsPager.artists.items);
                         spotify.searchAlbums(query, options, new SpotifyCallback<AlbumsPager>() {
                             @Override
                             public void failure(SpotifyError spotifyError) {
@@ -287,7 +286,7 @@ public class MainActivity extends AppCompatActivity {
 
                             @Override
                             public void success(AlbumsPager albumsPager, Response response) {
-                                addElemToAlbumsView(albumsPager.albums);
+                                addElemToAlbumsView(albumsPager.albums.items);
                             }
                         });
                     }
@@ -298,27 +297,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void addElemToTracksView(final Pager<Track> tracks) {
+    private void addElemToTracksView(final List<MyTrack> tracks) {
         tracksView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        for (int i =0 ;i<tracks.items.size();i++){
+        for (int i =0 ;i<tracks.size();i++){
             View elem = inflater.inflate(R.layout.item_track, null);
             TextView name = (TextView) elem.findViewById(R.id.name);
-            name.setText(tracks.items.get(i).name);
+            name.setText(tracks.get(i).getName());
             TextView artist = (TextView) elem.findViewById(R.id.artist);
-            artist.setText(tracks.items.get(i).artists.get(0).name);
+            artist.setText(tracks.get(i).getArtist());
             TextView album = (TextView) elem.findViewById(R.id.album);
-            album.setText(tracks.items.get(i).album.name);
+            album.setText(tracks.get(i).getAlbum());
             final int finalI = i;
             elem.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
-                    if(!tracks.items.get(finalI).equals(app.getCurrentTrack())) {
-                        app.newQueue(tracks.items.toArray(new Track[tracks.items.size()]));
+                    if(!tracks.get(finalI).equals(app.getCurrentTrack())) {
+                        app.newQueue(tracks);
                     }
                     app.setPosition(finalI);
-                    intent.putExtra("info","play");
+                    intent.putExtra("action","play");
                     startActivity(intent);
                 }
             });
@@ -326,16 +325,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void addElemToArtistsView(final Pager<Artist> artists) {
+    private void addElemToArtistsView(final List<Artist> artists) {
         artistsView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        for (int i =0; i<artists.items.size(); i++){
+        for (int i =0; i<artists.size(); i++){
             View elem = inflater.inflate(R.layout.item_artist, null);
             TextView name = (TextView) elem.findViewById(R.id.artist);
-            name.setText(artists.items.get(i).name);
+            name.setText(artists.get(i).name);
             CircleImageView image = (CircleImageView) elem.findViewById(R.id.image);
-            if (!artists.items.get(i).images.isEmpty()) {
-                Glide.with(this).load(artists.items.get(i).images.get(0).url).into(image);
+            if (!artists.get(i).images.isEmpty()) {
+                Glide.with(this).load(artists.get(i).images.get(0).url).into(image);
             }
             final int finalI = i;
             elem.setOnClickListener(new View.OnClickListener() {
@@ -343,7 +342,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), ArtistActivity.class);
                     TextView name = (TextView) view.findViewById(R.id.artist);
-                    intent.putExtra("artist", artists.items.get(finalI));
+                    intent.putExtra("artist", artists.get(finalI));
                     startActivity(intent);
                 }
             });
@@ -351,23 +350,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void addElemToAlbumsView(final Pager<AlbumSimple> albums) {
+    private void addElemToAlbumsView(final List<AlbumSimple> albums) {
         albumsView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        for (int i =0; i<albums.items.size(); i++){
+        for (int i =0; i<albums.size(); i++){
             View elem = inflater.inflate(R.layout.item_album, null);
             TextView name = (TextView) elem.findViewById(R.id.name);
-            name.setText(albums.items.get(i).name);
+            name.setText(albums.get(i).name);
             ImageView cover = (ImageView) elem.findViewById(R.id.cover);
-            if (!albums.items.get(i).images.isEmpty()) {
-                Glide.with(this).load(albums.items.get(i).images.get(0).url).into(cover);
+            if (!albums.get(i).images.isEmpty()) {
+                Glide.with(this).load(albums.get(i).images.get(0).url).into(cover);
             }
             final int finalI = i;
             elem.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), AlbumActivity.class);
-                    intent.putExtra("album", albums.items.get(finalI));
+                    app.setAlbum(albums.get(finalI));
+//                    intent.putExtra("album", albums.get(finalI));
                     startActivity(intent);
                 }
             });
