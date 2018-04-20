@@ -10,6 +10,8 @@ import android.media.MediaPlayer;
 
 
 import com.spotimyandroid.http.CallHelper;
+import com.spotimyandroid.resources.MyAlbum;
+import com.spotimyandroid.resources.MyArtist;
 import com.spotimyandroid.resources.MyTrack;
 
 import java.io.IOException;
@@ -24,6 +26,9 @@ import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Album;
 import kaaes.spotify.webapi.android.models.AlbumSimple;
 import kaaes.spotify.webapi.android.models.Artist;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 import static com.spotimyandroid.utils.StringsValues.BROADCAST_NEXT;
 import static com.spotimyandroid.utils.StringsValues.BROADCAST_PLAY;
@@ -42,8 +47,8 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
 
     private ArrayList<MyTrack> queue = new ArrayList<>();
     private ArrayList<MyTrack> recentTracks = new ArrayList<>(5);
-    private ArrayList<Album> recentAlbums= new ArrayList<>(5);;
-    private ArrayList<Artist> recentArtists= new ArrayList<>(5);;
+    private ArrayList<MyAlbum> recentAlbums= new ArrayList<>(5);;
+    private ArrayList<MyArtist> recentArtists= new ArrayList<>(5);;
     private String token;
     private AlbumSimple album;
     public SpotifyService spotify;
@@ -218,65 +223,61 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         if(recentTracks.contains(getCurrentTrack())){
           return;
         }
-//        server = new Api(getApplicationContext());
-//        server.findArtist(getCurrentTrack().getArtist(), new Api.VolleyCallback() {
-//            @Override
-//            public void onSuccess(JSONObject result) {
-//                getCurrentTrack().addArtistImage(result);
-//                System.out.println("attualmente ci sono "+recentTracks.size()+ " tracce recenti");
-//                if(recentTracks.size()==5){
-//                    recentTracks.remove(0);
-//                    recentTracks.add(getCurrentTrack());
-//                }
-//                else recentTracks.add(getCurrentTrack());
-//                String str="";
-//                for(int i= recentTracks.size()-1; i>=0 ; i--) {
-//                    Track t=recentTracks.get(i);
-//                    if(i==recentTracks.size()-1) str= str.concat(t.toString());
-//                    else str=str.concat(",,,"+t.toString());
-//                }
-//                System.out.println("salvo la stringa "+str);
-//                SharedPreferences.Editor prefEditor = getSharedPreferences("recent", Context.MODE_PRIVATE).edit();
-//                prefEditor.putString("tracks", str);
-//                prefEditor.commit();
-//                addAlbum(new Album(getCurrentTrack().getAlbumid(), getCurrentTrack().getAlbum(),
-//                            getCurrentTrack().getArtist(), getCurrentTrack().getCover()));
-//            }
-//        });
+
+        if(recentTracks.size()==5){
+            recentTracks.remove(0);
+            recentTracks.add(getCurrentTrack());
+        }
+        else recentTracks.add(getCurrentTrack());
+        String str="";
+        for(int i= recentTracks.size()-1; i>=0 ; i--) {
+            MyTrack t=recentTracks.get(i);
+            if(i==recentTracks.size()-1) str= str.concat(t.toString());
+            else str=str.concat(",,,"+t.toString());
+        }
+        SharedPreferences.Editor prefEditor = getSharedPreferences("recent", Context.MODE_PRIVATE).edit();
+        prefEditor.putString("tracks", str);
+        prefEditor.commit();
+        addAlbum(new MyAlbum(getCurrentTrack().getAlbumid(), getCurrentTrack().getAlbum(),
+                getCurrentTrack().getArtist(), getCurrentTrack().getCover()));
 
 
     }
 
-    public void addAlbum(final Album info) {
-        if(recentAlbums.contains(info)) return;
-//        server = new Api(getApplicationContext());
-//        server.findArtist(info.getArtist(), new Api.VolleyCallback() {
-//            @Override
-//            public void onSuccess(JSONObject result) {
-//                Artist artist = Artist.toArray(result)[0];
-//                System.out.println(artist);
-//                if (recentAlbums.size() == 5) {
-//                    recentAlbums.set(0, recentAlbums.get(1));
-//                    recentAlbums.set(1, recentAlbums.get(2));
-//                    recentAlbums.set(2, recentAlbums.get(3));
-//                    recentAlbums.set(3, recentAlbums.get(4));
-//                    recentAlbums.add(info);
-//                } else recentAlbums.add(info);
-//                String str = "";
-//                for (int i = recentAlbums.size() - 1; i >= 0; i--) {
-//                    Album t = recentAlbums.get(i);
-//                    if (i == recentAlbums.size() - 1) str = str.concat(t.toString());
-//                    else str = str.concat(",,," + t.toString());
-//                }
-//                SharedPreferences.Editor prefEditor = getSharedPreferences("recent", Context.MODE_PRIVATE).edit();
-//                prefEditor.putString("albums", str);
-//                prefEditor.commit();
-//                addArtist(artist);
-//            }
-//        });
+    public void addAlbum(final MyAlbum info) {
+        spotify.getArtist(getCurrentTrack().getArtistid(), new Callback<Artist>() {
+            @Override
+            public void success(Artist artist, Response response) {
+                if(recentAlbums.contains(info)) return;
+                if (recentAlbums.size() == 5) {
+                    recentAlbums.set(0, recentAlbums.get(1));
+                    recentAlbums.set(1, recentAlbums.get(2));
+                    recentAlbums.set(2, recentAlbums.get(3));
+                    recentAlbums.set(3, recentAlbums.get(4));
+                    recentAlbums.add(info);
+                } else recentAlbums.add(info);
+                String str = "";
+                for (int i = recentAlbums.size() - 1; i >= 0; i--) {
+                    MyAlbum t = recentAlbums.get(i);
+                    if (i == recentAlbums.size() - 1) str = str.concat(t.toString());
+                    else str = str.concat(",,," + t.toString());
+                }
+                SharedPreferences.Editor prefEditor = getSharedPreferences("recent", Context.MODE_PRIVATE).edit();
+                prefEditor.putString("albums", str);
+                prefEditor.commit();
+                addArtist(new MyArtist(getCurrentTrack().getArtist(), getCurrentTrack().getArtistid(), artist.images.get(0).url));
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+
+            }
+        });
+
+
     }
 
-    public void addArtist(Artist info) {
+    public void addArtist(MyArtist info) {
         if(recentArtists.contains(info)) {
             System.out.println("artista già presente nei recenti");
             return;
@@ -291,7 +292,7 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         else recentArtists.add(info);
         String str="";
         for(int i= recentArtists.size()-1; i>=0 ; i--) {
-            Artist t=recentArtists.get(i);
+            MyArtist t=recentArtists.get(i);
             if(i==recentArtists.size()-1) str= str.concat(t.toString());
             else str=str.concat(",,,"+t.toString());
         }
@@ -300,7 +301,7 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         prefEditor.commit();
     }
 
-    public void addRecentTracks(MyTrack[] tracks) {
+    public void addRecentTracks(List<MyTrack> tracks) {
         for (MyTrack track: tracks) {
             if(!recentTracks.contains(track)){
                 recentTracks.add(track);
@@ -308,16 +309,16 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         }
     }
 
-    public void addRecentAlbums(Album[] albums) {
-        for (Album album: albums) {
+    public void addRecentAlbums(List<MyAlbum> albums) {
+        for (MyAlbum album: albums) {
             if(!recentAlbums.contains(album)){
                 recentAlbums.add(album);
             }
         }
     }
 
-    public void addRecentArtists(Artist[] artists) {
-        for (Artist artist: artists) {
+    public void addRecentArtists(List<MyArtist> artists) {
+        for (MyArtist artist: artists) {
             if(!recentArtists.contains(artist)){
                 recentArtists.add(artist);
             }

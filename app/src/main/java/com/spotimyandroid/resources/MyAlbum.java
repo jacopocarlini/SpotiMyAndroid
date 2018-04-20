@@ -35,6 +35,13 @@ public class MyAlbum implements Parcelable {
 
     }
 
+    public MyAlbum(String albumid, String album, String artist, String cover) {
+        name = album;
+        id = albumid;
+        this.artist = artist;
+        this.cover = cover;
+    }
+
 
     public static List<MyAlbum> toArraySimple(List<AlbumSimple> items) {
         int size = items.size();
@@ -99,8 +106,8 @@ public class MyAlbum implements Parcelable {
                 ";" + cover +
                 ";" + id ;
     }
-    public static MyAlbum[] toArray(String s) {
-        if(s.equals("")) return new MyAlbum[0];
+    public static List<MyAlbum> toArray(String s) {
+        if(s.equals("")) return new ArrayList<>(0);
         ArrayList<MyAlbum> res=new ArrayList<>(5);
         String[] a = s.split(",,,");
         for (int i =0; i<a.length;i++) {
@@ -112,7 +119,7 @@ public class MyAlbum implements Parcelable {
             t.setID(info[3]);
             res.add(t);
         }
-        return res.toArray(new MyAlbum[res.size()]);
+        return res;
     }
 
     private void setID(String id) {

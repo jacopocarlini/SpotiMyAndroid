@@ -44,11 +44,13 @@ public class MyTrack implements Parcelable {
         artist = track.artists.get(0).name;
         cover = track.album.images.get(0).url;
         id = track.id;
+        artistid=track.artists.get(0).id;
     }
     public MyTrack(TrackSimple track) {
         name = track.name;
         artist = track.artists.get(0).name;
         id = track.id;
+        artistid=track.artists.get(0).id;
     }
 
     public MyTrack() {
@@ -60,6 +62,7 @@ public class MyTrack implements Parcelable {
         this.lyric = "lyric";
         this.duration = 0;
         this.id = "id";
+
     }
 
 
@@ -196,8 +199,8 @@ public class MyTrack implements Parcelable {
         return id.hashCode();
     }
 
-    public static MyTrack[] toArray(String s) {
-        if(s.equals("")) return new MyTrack[0];
+    public static List<MyTrack> toArray(String s) {
+        if(s.equals("")) return new ArrayList<MyTrack>();
         ArrayList<MyTrack>res=new ArrayList<>(5);
         String[] a = s.split(",,,");
         for (int i =0; i<a.length;i++) {
@@ -218,7 +221,7 @@ public class MyTrack implements Parcelable {
 
             res.add(t);
         }
-        return res.toArray(new MyTrack[res.size()]);
+        return res;
     }
 
     @Override

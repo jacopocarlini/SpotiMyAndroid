@@ -35,6 +35,12 @@ public class MyArtist implements Parcelable {
 
     }
 
+    public MyArtist(String artist, String artistid, String artistImage) {
+        name = artist;
+        id = artistid;
+        image = artistImage;
+    }
+
     public static List<MyArtist> toArray(List<Artist> items) {
         int size = items.size();
         ArrayList<MyArtist> myArtists = new ArrayList<>();
@@ -52,8 +58,8 @@ public class MyArtist implements Parcelable {
                 ";" + image +
                 ";" + id ;
     }
-    public static MyArtist[] toArray(String s) {
-        if(s.equals("")) return new MyArtist[0];
+    public static List<MyArtist> toArray(String s) {
+        if(s.equals("")) return new ArrayList<>(0);
         ArrayList<MyArtist> res=new ArrayList<>(5);
         String[] a = s.split(",,,");
         for (int i =0; i<a.length;i++) {
@@ -64,7 +70,7 @@ public class MyArtist implements Parcelable {
             t.setId(info[2]);
             res.add(t);
         }
-        return res.toArray(new MyArtist[res.size()]);
+        return res;
     }
 
 

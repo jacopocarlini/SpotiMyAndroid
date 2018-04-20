@@ -173,16 +173,17 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences sharedPref = getSharedPreferences( "recent", Context.MODE_PRIVATE );
         String s = sharedPref.getString("tracks", "");
-//        app.addRecentTracks(Track.toArray(s));
-//        addElemToTracksView(Track.toArray(s));
-//
-//        String a = sharedPref.getString("albums", "");
-//        app.addRecentAlbums(Album.toArray(a));
-//        addElemToAlbumsView(Album.toArray(a));
-//
-//        String ar = sharedPref.getString("artists", "");
-//        app.addRecentArtists(Artist.toArray(ar));
-//        addElemToArtistsView(Artist.toArray(ar));
+        System.out.println(s);
+        app.addRecentTracks(MyTrack.toArray(s));
+        addElemToTracksView(MyTrack.toArray(s));
+
+        String a = sharedPref.getString("albums", "");
+        app.addRecentAlbums(MyAlbum.toArray(a));
+        addElemToAlbumsView(MyAlbum.toArray(a));
+
+        String ar = sharedPref.getString("artists", "");
+        app.addRecentArtists(MyArtist.toArray(ar));
+        addElemToArtistsView(MyArtist.toArray(ar));
 
     }
 

@@ -1,6 +1,8 @@
 package com.spotimyandroid;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -34,6 +36,11 @@ public class LoginActivity  extends AppCompatActivity{
         AuthenticationRequest request = builder.build();
 
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
+//        SharedPreferences.Editor prefEditor = getSharedPreferences("recent", Context.MODE_PRIVATE).edit();
+//        prefEditor.putString("artists", "");
+//        prefEditor.putString("tracks", "");
+//        prefEditor.putString("albums", "");
+//        prefEditor.commit();
     }
 
     @Override
