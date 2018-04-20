@@ -130,6 +130,7 @@ public class ArtistActivity extends AppCompatActivity {
             }
         });
 
+        setBottomBar();
         player();
     }
 
@@ -257,6 +258,41 @@ public class ArtistActivity extends AppCompatActivity {
         });
     }
 
+    private void setBottomBar(){
+//        LinearLayout home = (LinearLayout) findViewById(R.id.home);
+//        home.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+//                startActivity(intent);
+//            }
+//        });
+        LinearLayout discover = (LinearLayout) findViewById(R.id.discover);
+        discover.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), DiscoverActivity.class);
+                startActivity(intent);
+            }
+        });
+        LinearLayout profile = (LinearLayout) findViewById(R.id.profile);
+        profile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
+                startActivity(intent);
+            }
+        });
+        LinearLayout settings = (LinearLayout) findViewById(R.id.settings);
+        settings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+                startActivity(intent);
+            }
+        });
+
+    }
 
 
 }
