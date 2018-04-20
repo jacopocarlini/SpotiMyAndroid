@@ -22,17 +22,15 @@ import java.util.Map;
  */
 
 
-public class Api {
+public class Call {
     public static final String TAG = "API";
-    private static Context contextS;
     private Context context;
     private RequestQueue queue;
     private int offset;
 
 
-    public Api(Context context) {
+    public Call(Context context) {
         this.context = context;
-//        contextS=context;
         // Get a RequestQueue
         queue = RequestQueue_Singeton.getInstance(context).getRequestQueue();
     }
@@ -72,14 +70,12 @@ public class Api {
     }
 
     public void findTrack(String query, final HTMLCallback callback) {
-        // Instantiate the RequestQueue.
-
         String url = "https://my-free-mp3.net/api/search.php?";
         callHTML(url, query,callback);
     }
 
 
-    private void call(String url, final VolleyCallback callback) {
+    private void callJSON(String url, final JSONCallback callback) {
         // Request a string response from the provided URL.
         JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONObject>() {
@@ -109,10 +105,10 @@ public class Api {
     }
 
 
-    public void lyric(String artist, String track, final VolleyCallback callback) {
+    public void lyric(String artist, String track, final JSONCallback callback) {
         // Instantiate the RequestQueue.
         String url = "http://lyric-api.herokuapp.com/api/find/" + sostituisci(artist)+"/"+sostituisci(track);
-        call(url, callback);
+        callJSON(url, callback);
     }
 
 
@@ -133,8 +129,9 @@ public class Api {
     }
 
 
-    public interface VolleyCallback {
+    public interface JSONCallback {
         void onSuccess(JSONObject result);
+        void onError(String error);
     }
 
     public interface HTMLCallback {

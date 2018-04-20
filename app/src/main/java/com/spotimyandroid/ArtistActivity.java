@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.GridLayout;
@@ -19,13 +18,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.spotimyandroid.http.Api;
 import com.spotimyandroid.utils.ApplicationSupport;
 import com.spotimyandroid.utils.BottomNavigationViewHelper;
 import com.spotimyandroid.utils.StringsValues;
-
-import org.json.JSONObject;
 
 import kaaes.spotify.webapi.android.models.Album;
 import kaaes.spotify.webapi.android.models.Artist;
@@ -38,7 +33,6 @@ import kaaes.spotify.webapi.android.models.Track;
 public class ArtistActivity extends AppCompatActivity {
 
     private Artist artistInfo;
-    private Api server;
     private TextView name;
     private ImageView image;
     private LinearLayout popular;
@@ -59,7 +53,6 @@ public class ArtistActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         artistInfo = intent.getParcelableExtra("artist");
-        server = new Api(this);
         mediaPlayer = as.getMP();
 
         initview();

@@ -7,21 +7,21 @@ import com.android.volley.RequestQueue;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ApiHelper {
+public class CallHelper {
     private Context context;
     private RequestQueue queue;
-    private Api mApi;
+    private Call mApi;
 
 
-    public ApiHelper(Context context) {
+    public CallHelper(Context context) {
         this.context = context;
-        mApi = new Api(context);
+        mApi = new Call(context);
         // Get a RequestQueue
         queue = RequestQueue_Singeton.getInstance(context).getRequestQueue();
     }
 
     public void findTracks(String query, final onMusicCallback callback){
-        mApi.findTrack(query, new Api.HTMLCallback() {
+        mApi.findTrack(query, new Call.HTMLCallback() {
             @Override
             public void onSuccess(String result) {
                 try {
@@ -70,7 +70,7 @@ public class ApiHelper {
     }
 
     public void getLyric(String artist, String track, final onLyricCallback callback) {
-        mApi.lyric(artist, track, new Api.VolleyCallback() {
+        mApi.lyric(artist, track, new Call.JSONCallback() {
             @Override
             public void onSuccess(JSONObject result) {
                 try {
@@ -78,6 +78,11 @@ public class ApiHelper {
                 } catch (JSONException e) {
                     callback.onError(e.getMessage());
                 }
+            }
+
+            @Override
+            public void onError(String error) {
+
             }
         });
     }

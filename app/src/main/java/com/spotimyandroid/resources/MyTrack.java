@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import kaaes.spotify.webapi.android.models.Album;
+import kaaes.spotify.webapi.android.models.AlbumSimple;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.TrackSimple;
 
@@ -60,6 +61,8 @@ public class MyTrack implements Parcelable {
         this.duration = 0;
         this.id = "id";
     }
+
+
 
     public static List<MyTrack> toArray(List<Track> tracks) {
         int size = tracks.size();
@@ -289,6 +292,7 @@ public class MyTrack implements Parcelable {
             e.printStackTrace();
         }
     }
+
 
 
 }

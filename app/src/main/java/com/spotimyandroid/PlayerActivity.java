@@ -18,16 +18,10 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.spotimyandroid.http.Api;
-import com.spotimyandroid.http.ApiHelper;
+import com.spotimyandroid.http.CallHelper;
 import com.spotimyandroid.resources.MyTrack;
 import com.spotimyandroid.utils.ApplicationSupport;
 import com.spotimyandroid.utils.StringsValues;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import kaaes.spotify.webapi.android.models.Track;
 
 /**
  * Created by Jacopo on 11/03/2018.
@@ -47,12 +41,11 @@ public class PlayerActivity extends AppCompatActivity{
     private MediaPlayer mediaPlayer;
     private Handler handler = new Handler();
     private MyTrack trackInfo;
-    private Api server;
     private ApplicationSupport as;
     private AsyncTask downloadSong;
     private BroadcastReceiver mReceiverPlay;
     private BroadcastReceiver mReceiverNext;
-    private ApiHelper apiHelper;
+    private CallHelper apiHelper;
 
 
     @Override
@@ -62,9 +55,8 @@ public class PlayerActivity extends AppCompatActivity{
 
         as = ((ApplicationSupport) this.getApplication());
         mediaPlayer = as.getMP();
-        server = new Api(this);
         trackInfo = as.getCurrentTrack();
-        apiHelper = new ApiHelper(getApplicationContext());
+        apiHelper = new CallHelper(getApplicationContext());
 
         initiview();
 
@@ -188,7 +180,7 @@ public class PlayerActivity extends AppCompatActivity{
         track.setText(trackInfo.getName());
         album.setText(trackInfo.getAlbum());
         artist.setText(trackInfo.getArtist());
-        apiHelper.getLyric(trackInfo.getArtist(), trackInfo.getName(), new ApiHelper.onLyricCallback() {
+        apiHelper.getLyric(trackInfo.getArtist(), trackInfo.getName(), new CallHelper.onLyricCallback() {
             @Override
             public void onSuccess(String lyricText) {
                 lyric.setText(lyricText);

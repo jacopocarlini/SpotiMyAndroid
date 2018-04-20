@@ -15,7 +15,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.WebView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -24,14 +23,11 @@ import android.widget.SearchView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.spotimyandroid.http.Api;
+import com.spotimyandroid.resources.MyAlbum;
 import com.spotimyandroid.resources.MyTrack;
 import com.spotimyandroid.utils.ApplicationSupport;
 import com.spotimyandroid.utils.BottomNavigationViewHelper;
 import com.spotimyandroid.utils.StringsValues;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.List;
@@ -42,13 +38,9 @@ import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyCallback;
 import kaaes.spotify.webapi.android.SpotifyError;
 import kaaes.spotify.webapi.android.SpotifyService;
-import kaaes.spotify.webapi.android.models.Album;
-import kaaes.spotify.webapi.android.models.AlbumSimple;
 import kaaes.spotify.webapi.android.models.AlbumsPager;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
-import kaaes.spotify.webapi.android.models.Pager;
-import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.TracksPager;
 import retrofit.client.Response;
 
@@ -67,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver mReceiver;
     private ImageButton pause;
 
-    private SpotifyService spotify;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
 
         SpotifyApi api = new SpotifyApi();
         api.setAccessToken(app.getToken());
-        spotify = api.getService();
+        app.spotify = api.getService();
 
         mediaPlayer = app.getMP();
         initview();
@@ -260,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
 
         final Map<String, Object> options = new HashMap<>();
         options.put(SpotifyService.LIMIT, 5);
-        spotify.searchTracks(query, options, new SpotifyCallback<TracksPager>() {
+        app.spotify.searchTracks(query, options, new SpotifyCallback<TracksPager>() {
             @Override
             public void failure(SpotifyError spotifyError) {
 
@@ -269,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void success(TracksPager tracksPager, Response response) {
                 addElemToTracksView(MyTrack.toArray(tracksPager.tracks.items));
-                spotify.searchArtists(query, options, new SpotifyCallback<ArtistsPager>() {
+                app.spotify.searchArtists(query, options, new SpotifyCallback<ArtistsPager>() {
                     @Override
                     public void failure(SpotifyError spotifyError) {
                         
@@ -278,7 +269,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void success(ArtistsPager artistsPager, Response response) {
                         addElemToArtistsView(artistsPager.artists.items);
-                        spotify.searchAlbums(query, options, new SpotifyCallback<AlbumsPager>() {
+                        app.spotify.searchAlbums(query, options, new SpotifyCallback<AlbumsPager>() {
                             @Override
                             public void failure(SpotifyError spotifyError) {
                                 
@@ -286,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
 
                             @Override
                             public void success(AlbumsPager albumsPager, Response response) {
-                                addElemToAlbumsView(albumsPager.albums.items);
+                                addElemToAlbumsView(MyAlbum.toArray(albumsPager.albums.items));
                             }
                         });
                     }
@@ -350,24 +341,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void addElemToAlbumsView(final List<AlbumSimple> albums) {
+    private void addElemToAlbumsView(final List<MyAlbum> albums) {
         albumsView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         for (int i =0; i<albums.size(); i++){
             View elem = inflater.inflate(R.layout.item_album, null);
             TextView name = (TextView) elem.findViewById(R.id.name);
-            name.setText(albums.get(i).name);
+            name.setText(albums.get(i).getName());
             ImageView cover = (ImageView) elem.findViewById(R.id.cover);
-            if (!albums.get(i).images.isEmpty()) {
-                Glide.with(this).load(albums.get(i).images.get(0).url).into(cover);
+            if (albums.get(i).hasCover()) {
+                Glide.with(this).load(albums.get(i).getCover()).into(cover);
             }
             final int finalI = i;
             elem.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), AlbumActivity.class);
-                    app.setAlbum(albums.get(finalI));
-//                    intent.putExtra("album", albums.get(finalI));
+                    intent.putExtra("album", albums.get(finalI));
                     startActivity(intent);
                 }
             });

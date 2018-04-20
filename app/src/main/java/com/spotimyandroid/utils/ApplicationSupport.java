@@ -7,27 +7,23 @@ import android.content.SharedPreferences;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 
-import com.spotimyandroid.http.Api;
-import com.spotimyandroid.http.ApiHelper;
+
+import com.spotimyandroid.http.CallHelper;
 import com.spotimyandroid.resources.MyTrack;
-
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 
+import kaaes.spotify.webapi.android.SpotifyApi;
+import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Album;
 import kaaes.spotify.webapi.android.models.AlbumSimple;
 import kaaes.spotify.webapi.android.models.Artist;
-import kaaes.spotify.webapi.android.models.Track;
-import kaaes.spotify.webapi.android.models.TrackSimple;
 
 import static com.spotimyandroid.utils.StringsValues.BROADCAST_NEXT;
 import static com.spotimyandroid.utils.StringsValues.BROADCAST_PLAY;
@@ -50,6 +46,7 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
     private ArrayList<Artist> recentArtists= new ArrayList<>(5);;
     private String token;
     private AlbumSimple album;
+    public SpotifyService spotify;
 
 
     public void prepare(){
@@ -154,8 +151,8 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         headers.put("Accept-Ranges", "bytes");
         headers.put("Status", "206");
         headers.put("Cache-control", "no-cache");
-        ApiHelper apiHelper = new ApiHelper(getApplicationContext());
-        apiHelper.findTracks(getCurrentTrack().getArtist() + " " + getCurrentTrack().getName(), new ApiHelper.onMusicCallback() {
+        CallHelper apiHelper = new CallHelper(getApplicationContext());
+        apiHelper.findTracks(getCurrentTrack().getArtist() + " " + getCurrentTrack().getName(), new CallHelper.onMusicCallback() {
             @Override
             public void onSuccess(String url) {
                 try {

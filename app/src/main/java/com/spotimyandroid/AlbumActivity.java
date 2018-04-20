@@ -18,37 +18,37 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.spotimyandroid.http.Api;
+import com.spotimyandroid.resources.MyAlbum;
 import com.spotimyandroid.resources.MyTrack;
 import com.spotimyandroid.utils.ApplicationSupport;
 import com.spotimyandroid.utils.BottomNavigationViewHelper;
 import com.spotimyandroid.utils.StringsValues;
 
-import org.json.JSONObject;
-
 import java.util.List;
 
 import kaaes.spotify.webapi.android.models.Album;
-import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.TrackSimple;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 /**
  * Created by Jacopo on 13/03/2018.
  */
 
 public class AlbumActivity extends AppCompatActivity{
-    private Api server;
     private TextView albumView;
     private TextView artistView;
     private LinearLayout tracksView;
     private List<TrackSimple> tracks;
-    private Album albumInfo;
+    private MyAlbum albumInfo;
     private ImageView cover;
     private ApplicationSupport as;
     private MediaPlayer mediaPlayer;
     private BroadcastReceiver mReceiverPlay;
     private ImageView pause;
     private ImageView player;
+    public Album album;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,14 +56,23 @@ public class AlbumActivity extends AppCompatActivity{
         setContentView(R.layout.activity_album);
         as = (ApplicationSupport) this.getApplication();
         Intent intent = getIntent();
-//        albumInfo = intent.getParcelableExtra("album");
-//        albumInfo = as.getAlbum();
-        tracks = albumInfo.tracks.items;
+        albumInfo = intent.getParcelableExtra("album");
         mediaPlayer = as.getMP();
-        server = new Api(this);
+        as.spotify.getAlbum(albumInfo.getId(), new Callback<Album>() {
+            @Override
+            public void success(Album album1, Response response) {
+                album = album1;
+                tracks = album.tracks.items;
+                albumInfo.setArtist(album1.artists.get(0).name);
 
+                initview();
+            }
 
-        as.addAlbum(albumInfo);
+            @Override
+            public void failure(RetrofitError error) {
+
+            }
+        });
 
         mReceiverPlay = new BroadcastReceiver() {
             @Override
@@ -79,7 +88,7 @@ public class AlbumActivity extends AppCompatActivity{
                 }
             }
         };
-        initview();
+
     }
 
     @Override
@@ -98,9 +107,9 @@ public class AlbumActivity extends AppCompatActivity{
 
     private void initview() {
         albumView = (TextView) findViewById(R.id.album);
-        albumView.setText(albumInfo.name);
+        albumView.setText(albumInfo.getName());
         artistView = (TextView) findViewById(R.id.artist);
-        artistView.setText(albumInfo.artists.get(0).name);
+        artistView.setText(albumInfo.getArtist());
         tracksView = (LinearLayout) findViewById(R.id.tracks);
         tracksView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -115,10 +124,10 @@ public class AlbumActivity extends AppCompatActivity{
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
-                    as.newQueue(MyTrack.toArraySimple(tracks, albumInfo));
+                    as.newQueue(MyTrack.toArraySimple(tracks, album));
                     as.setPosition(finalI);
 
-                    intent.putExtra("info","play");
+                    intent.putExtra("action","play");
                     startActivity(intent);
                 }
             });
@@ -127,9 +136,8 @@ public class AlbumActivity extends AppCompatActivity{
         }
 
         cover = (ImageView) findViewById(R.id.cover);
-        if (albumInfo.images.size()>0)
-//            new DownloadImageTask(cover).execute(albumInfo.getCover());
-            Glide.with(this).load(albumInfo.images.get(0).url).into(cover);
+        if (albumInfo.hasCover())
+            Glide.with(this).load(albumInfo.getCover()).into(cover);
 
         BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottombar);
         BottomNavigationViewHelper.disableShiftMode(bottomNavigationView);
@@ -162,7 +170,7 @@ public class AlbumActivity extends AppCompatActivity{
         if(as.state== StringsValues.PLAY) playerBar.setVisibility(View.VISIBLE);
         else playerBar.setVisibility(View.INVISIBLE);
         pause=(ImageButton) findViewById(R.id.pause);
-        if(mediaPlayer.isPlaying()) {
+        if(mediaPlayer!=null && mediaPlayer.isPlaying()) {
             pause.setImageResource(R.drawable.ic_pause_black_24dp);
         }
         else{
@@ -202,7 +210,7 @@ public class AlbumActivity extends AppCompatActivity{
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
-                intent.putExtra("info","openonly");
+                intent.putExtra("action","openonly");
                 startActivity(intent);
             }
         });
