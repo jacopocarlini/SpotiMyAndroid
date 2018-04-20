@@ -7,6 +7,7 @@ import android.os.Parcelable;
 import java.util.ArrayList;
 import java.util.List;
 
+import kaaes.spotify.webapi.android.models.Album;
 import kaaes.spotify.webapi.android.models.AlbumSimple;
 
 /**
@@ -28,8 +29,6 @@ public class MyAlbum implements Parcelable {
         name = album.name;
         id = album.id;
         cover = album.images.get(0).url;
-
-
     }
 
     public MyAlbum() {
@@ -37,7 +36,16 @@ public class MyAlbum implements Parcelable {
     }
 
 
-    public static List<MyAlbum> toArray(List<AlbumSimple> items) {
+    public static List<MyAlbum> toArraySimple(List<AlbumSimple> items) {
+        int size = items.size();
+        ArrayList<MyAlbum> myTracks = new ArrayList<>();
+        for(int i=0; i<size;i++){
+            MyAlbum myAlbum = new MyAlbum(items.get(i));
+            myTracks.add(myAlbum);
+        }
+        return myTracks;
+    }
+    public static List<MyAlbum> toArray(List<Album> items) {
         int size = items.size();
         ArrayList<MyAlbum> myTracks = new ArrayList<>();
         for(int i=0; i<size;i++){

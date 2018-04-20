@@ -24,6 +24,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.spotimyandroid.resources.MyAlbum;
+import com.spotimyandroid.resources.MyArtist;
 import com.spotimyandroid.resources.MyTrack;
 import com.spotimyandroid.utils.ApplicationSupport;
 import com.spotimyandroid.utils.BottomNavigationViewHelper;
@@ -114,7 +115,6 @@ public class MainActivity extends AppCompatActivity {
         this.artistsView = (LinearLayout) findViewById(R.id.artistsView);
         this.albumsView = (LinearLayout) findViewById(R.id.albumsView);
 
-        final AsyncTask[] task = new AsyncTask[1];
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
@@ -268,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void success(ArtistsPager artistsPager, Response response) {
-                        addElemToArtistsView(artistsPager.artists.items);
+                        addElemToArtistsView(MyArtist.toArray(artistsPager.artists.items));
                         app.spotify.searchAlbums(query, options, new SpotifyCallback<AlbumsPager>() {
                             @Override
                             public void failure(SpotifyError spotifyError) {
@@ -277,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
 
                             @Override
                             public void success(AlbumsPager albumsPager, Response response) {
-                                addElemToAlbumsView(MyAlbum.toArray(albumsPager.albums.items));
+                                addElemToAlbumsView(MyAlbum.toArraySimple(albumsPager.albums.items));
                             }
                         });
                     }
@@ -316,23 +316,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void addElemToArtistsView(final List<Artist> artists) {
+    private void addElemToArtistsView(final List<MyArtist> artists) {
         artistsView.removeAllViews();
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         for (int i =0; i<artists.size(); i++){
             View elem = inflater.inflate(R.layout.item_artist, null);
             TextView name = (TextView) elem.findViewById(R.id.artist);
-            name.setText(artists.get(i).name);
+            name.setText(artists.get(i).getName());
             CircleImageView image = (CircleImageView) elem.findViewById(R.id.image);
-            if (!artists.get(i).images.isEmpty()) {
-                Glide.with(this).load(artists.get(i).images.get(0).url).into(image);
+            if (artists.get(i).hasImage()) {
+                Glide.with(this).load(artists.get(i).getImage()).into(image);
             }
             final int finalI = i;
             elem.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), ArtistActivity.class);
-                    TextView name = (TextView) view.findViewById(R.id.artist);
                     intent.putExtra("artist", artists.get(finalI));
                     startActivity(intent);
                 }
