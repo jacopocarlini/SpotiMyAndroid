@@ -73,8 +73,7 @@ public class PlayerActivity extends AppCompatActivity{
                 // Do what you need in here
                 trackInfo = as.getCurrentTrack();
                 initiview();
-                primaryProgressBarUpdater();
-                enableSeek();
+
             }
         };
 
@@ -84,8 +83,6 @@ public class PlayerActivity extends AppCompatActivity{
                 // Do what you need in here
                 trackInfo = as.getCurrentTrack();
                 initiview();
-                primaryProgressBarUpdater();
-                enableSeek();
 
             }
         };
@@ -197,7 +194,8 @@ public class PlayerActivity extends AppCompatActivity{
             Glide.with(this).load(trackInfo.getCover()).into(cover);
         }
 
-
+        primaryProgressBarUpdater();
+        enableSeek();
 
 
     }
