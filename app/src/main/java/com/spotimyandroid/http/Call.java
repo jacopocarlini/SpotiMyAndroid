@@ -70,7 +70,7 @@ public class Call {
     }
 
     public void findTrack(String query, final HTMLCallback callback) {
-        String url = "https://my-free-mp3.net/api/search.php?";
+        String url = "https://my-free-mp3.net/api/search.php?callback=j";
         callHTML(url, query,callback);
     }
 

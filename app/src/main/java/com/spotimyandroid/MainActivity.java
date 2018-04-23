@@ -1,5 +1,8 @@
 package com.spotimyandroid;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -10,10 +13,15 @@ import android.graphics.ColorFilter;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
+import android.media.session.MediaSession;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.ResultReceiver;
 import android.os.StrictMode;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -68,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<MyTrack> tracks;
 
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,6 +107,15 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
+
+        MediaSession mSession = new MediaSession(this, "MusicService");
+        mSession.setCallback(new MediaSession.Callback() {
+            @Override
+            public void onCommand(@NonNull String command, @Nullable Bundle args, @Nullable ResultReceiver cb) {
+                super.onCommand(command, args, cb);
+            }
+        });
+        mSession.setFlags(MediaSession.FLAG_HANDLES_MEDIA_BUTTONS | MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS);
     }
 
 
@@ -163,10 +181,12 @@ public class MainActivity extends AppCompatActivity {
         addElemToTracksView(MyTrack.toArray(s));
 
         String a = sharedPref.getString("albums", "");
+        System.out.println("stringa trovata "+a);
         app.addRecentAlbums(MyAlbum.toArray(a));
         addElemToAlbumsView(MyAlbum.toArray(a));
 
         String ar = sharedPref.getString("artists", "");
+        System.out.println("stringa trovata "+ar);
         app.addRecentArtists(MyArtist.toArray(ar));
         addElemToArtistsView(MyArtist.toArray(ar));
 

@@ -45,6 +45,7 @@
             android:layout_weight="1"
             android:padding="8dp"
             android:tint="@color/white"
+            android:visibility="invisible"
             app:srcCompat="@drawable/ic_playlist_add_black_24dp" />
 
         <ImageView
@@ -60,6 +61,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="8dp"
+            android:visibility="invisible"
             app:srcCompat="@drawable/ic_queue_white_24dp" />
 
     </LinearLayout>

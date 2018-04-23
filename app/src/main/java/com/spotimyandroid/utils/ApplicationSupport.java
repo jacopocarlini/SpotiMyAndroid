@@ -4,11 +4,18 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.support.design.widget.Snackbar;
+import android.view.Gravity;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 
+import com.spotimyandroid.R;
 import com.spotimyandroid.http.CallHelper;
 import com.spotimyandroid.resources.MyAlbum;
 import com.spotimyandroid.resources.MyArtist;
@@ -99,21 +106,12 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
         if ( (++pointer < queue.size())) {
             state=StringsValues.DOWNLOADING;
             MyTrack track = queue.get(pointer);
-            try {
-                Intent i = new Intent(BROADCAST_NEXT);
-                i.putExtra("next_track", true);
-                sendBroadcast(i);
-                mediaPlayer.setDataSource("");
-                mp.prepare();
-                mp.start();
-                state=StringsValues.PLAY;
-                i = new Intent(BROADCAST_PLAY);
-                i.putExtra("play", true);
-                sendBroadcast(i);
+            nextTrack();
+            Intent i = new Intent(BROADCAST_NEXT);
+            i.putExtra("next_track", true);
+            sendBroadcast(i);
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
         }
     }
 
@@ -148,45 +146,71 @@ public class ApplicationSupport extends Application  implements MediaPlayer.OnCo
 
     public void play() {
         System.out.println("play");
+        SharedPreferences.Editor prefEditor = getSharedPreferences("recent", Context.MODE_PRIVATE).edit();
+        prefEditor.putString("artists", "");
+        prefEditor.putString("tracks", "");
+        prefEditor.putString("albums", "");
+        prefEditor.commit();
         addTrack();
 
         if (mp.isPlaying()) mp.stop();
         mp.reset();
         state=StringsValues.DOWNLOADING;
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", "audio/mp3"); // change content type if necessary
-        headers.put("Accept-Ranges", "bytes");
-        headers.put("Status", "206");
-        headers.put("Cache-control", "no-cache");
+//        Map<String, String> headers = new HashMap<>();
+//        headers.put("Content-Type", "audio/mp3"); // change content type if necessary
+//        headers.put("Accept-Ranges", "bytes");
+//        headers.put("Status", "206");
+//        headers.put("Cache-control", "no-cache");
         CallHelper apiHelper = new CallHelper(getApplicationContext());
-        apiHelper.findTracks(getCurrentTrack().getArtist() + " " + getCurrentTrack().getName(), new CallHelper.onMusicCallback() {
+        apiHelper.findTracks(getCurrentTrack().getArtist(), getCurrentTrack().getName(), new CallHelper.onMusicCallback() {
             @Override
             public void onSuccess(String url) {
                 try {
                     System.out.println(url);
+                    if(url.equals("null")){
+                        Context context = getApplicationContext();
+                        CharSequence text = "Track not found!";
+                        int duration = Toast.LENGTH_SHORT;
+
+                        Toast toast = Toast.makeText(context, text, duration);
+                        toast.show();
+
+                        state=StringsValues.WAITING;
+                        Intent i = new Intent(BROADCAST_PLAY);
+                        i.putExtra("next_track", false);
+                        sendBroadcast(i);
+                        return;
+                    }
                     mp.setDataSource(url);
                     System.out.println("setDatasource");
-                    mp.prepare();
-                    //mp3 will be started after completion of preparing...
-//                    mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-//
-//                        @Override
-//                        public void onPrepared(MediaPlayer player) {
-//                            System.out.println("preparate");
-//                            player.start();
-//                            state=StringsValues.PLAY;
-//                            Intent i = new Intent(BROADCAST_PLAY);
-//                            i.putExtra("next_track", true);
-//                            sendBroadcast(i);
-//                        }
-//
-//                    });
-                    System.out.println("preparate");
-                    mp.start();
-                    state=StringsValues.PLAY;
-                    Intent i = new Intent(BROADCAST_PLAY);
-                    i.putExtra("next_track", true);
-                    sendBroadcast(i);
+                    mp.prepareAsync();
+//                    mp3 will be started after completion of preparing...
+                    mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+
+                        @Override
+                        public void onPrepared(MediaPlayer player) {
+                            System.out.println("preparate");
+                            player.start();
+                            state=StringsValues.PLAY;
+                            Intent i = new Intent(BROADCAST_PLAY);
+                            i.putExtra("next_track", true);
+                            sendBroadcast(i);
+                        }
+
+
+                    });
+                    mp.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                        @Override
+                        public boolean onError(MediaPlayer mp, int what, int extra) {
+                            return false;
+                        }
+                    });
+//                    System.out.println("preparate");
+//                    mp.start();
+//                    state=StringsValues.PLAY;
+//                    Intent i = new Intent(BROADCAST_PLAY);
+//                    i.putExtra("next_track", true);
+//                    sendBroadcast(i);
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
